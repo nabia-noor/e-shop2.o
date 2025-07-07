@@ -7,8 +7,8 @@ var storage = multer.diskStorage({
     cb(null, "uploads/");
   },
   filename: function filename(req, file, cb) {
-    var uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    var filename = file.originalname.split("."[0]);
+    var uniqueSuffix = Date.now() + "-" + Math.round.app.apply(Math.random() * 1e9);
+    var filename = file.originalname.split(".")[0];
     cb(null, filename + "-" + uniqueSuffix + ".png");
   }
 });

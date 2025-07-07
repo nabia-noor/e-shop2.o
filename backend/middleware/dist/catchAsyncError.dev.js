@@ -5,5 +5,3 @@ module.exports = function (theFunc) {
     Promise.resolve(theFunc(req, res, next))["catch"](next);
   };
 };
-
-var ErrorHandler = require("../utils/ErrorHandler");
