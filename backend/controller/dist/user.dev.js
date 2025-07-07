@@ -11,8 +11,19 @@ var router = express.Router();
 
 var User = require("../model/user");
 
+var ErrorHandler = require("../utils/ErrorHandler");
+
+var fs = require("fs");
+
+var jwt = require("jsonwebtoken");
+
+var sendMail = require("../utils/sendMail");
+
+var _require2 = require("console"),
+    error = _require2.error;
+
 router.post("/create-user", upload.single("file"), function _callee(req, res, next) {
-  var _req$body, name, email, password, userEmail, filename, fileUrl, user;
+  var _req$body, name, email, password, userEmail, _filename, filePath, filename, fileUrl, user, activationToken, activationUrl;
 
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
@@ -20,7 +31,7 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
         case 0:
           _req$body = req.body, name = _req$body.name, email = _req$body.email, password = _req$body.password;
           _context.next = 3;
-          return regeneratorRuntime.awrap(user.findOne({
+          return regeneratorRuntime.awrap(User.findOne({
             email: email
           }));
 
@@ -28,25 +39,80 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
           userEmail = _context.sent;
 
           if (!userEmail) {
-            _context.next = 6;
+            _context.next = 9;
             break;
           }
 
+          _filename = req.file.filename;
+          filePath = "uploads/".concat(_filename);
+          fs.unlink(filePath, function (err) {
+            if (err) {
+              console.log(err);
+              res.status(500).json({
+                message: "Error deleting file"
+              });
+            } else {
+              res.json({
+                message: "file deleted successfully"
+              });
+            }
+          });
           return _context.abrupt("return", next(new ErrorHandler("User already exists", 400)));
 
-        case 6:
+        case 9:
           filename = req.file.filename;
           fileUrl = path.join(filename);
           user = {
             name: name,
             email: email,
-            password: password
+            password: password,
+            avatar: fileUrl
           };
+          activationToken = createActivationToken(user);
+          activationUrl = "http://localhost:3000/activation/".concat(activationToken);
+          _context.prev = 14;
+          _context.next = 17;
+          return regeneratorRuntime.awrap(sendMail({
+            email: user.email,
+            subject: "Activate your account",
+            message: "Hello".concat(user.name, ", please click on the link to Activate your account: ").concat(activationUrl)
+          }));
 
-        case 9:
+        case 17:
+          res.status(201).json({
+            success: true,
+            message: "please check your email:- ".concat(user.email, " to Activate your account!")
+          });
+          _context.next = 23;
+          break;
+
+        case 20:
+          _context.prev = 20;
+          _context.t0 = _context["catch"](14);
+          return _context.abrupt("return", next(new ErrorHandler(_context.t0.message, 500)));
+
+        case 23:
+          _context.prev = 23;
+          _context.next = 29;
+          break;
+
+        case 26:
+          _context.prev = 26;
+          _context.t1 = _context["catch"](23);
+          return _context.abrupt("return", next(new ErrorHandler(_context.t1.message, 400)));
+
+        case 29:
         case "end":
           return _context.stop();
       }
     }
+  }, null, null, [[14, 20], [23, 26]]);
+}); // create activation token
+
+var createActivationToken = function createActivationToken(user) {
+  return jwt.sign(user, process.env.ACTIVATION_SECRET, {
+    expiresIn: "5m"
   });
-});
+};
+
+module.exports = router;
