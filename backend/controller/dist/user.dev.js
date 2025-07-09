@@ -30,16 +30,17 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
       switch (_context.prev = _context.next) {
         case 0:
           _req$body = req.body, name = _req$body.name, email = _req$body.email, password = _req$body.password;
-          _context.next = 3;
+          console.log(name, email);
+          _context.next = 4;
           return regeneratorRuntime.awrap(User.findOne({
             email: email
           }));
 
-        case 3:
+        case 4:
           userEmail = _context.sent;
 
           if (!userEmail) {
-            _context.next = 9;
+            _context.next = 10;
             break;
           }
 
@@ -59,7 +60,7 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
           });
           return _context.abrupt("return", next(new ErrorHandler("User already exists", 400)));
 
-        case 9:
+        case 10:
           filename = req.file.filename;
           fileUrl = path.join(filename);
           user = {
@@ -68,45 +69,46 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
             password: password,
             avatar: fileUrl
           };
+          console.log(user);
           activationToken = createActivationToken(user);
           activationUrl = "http://localhost:3000/activation/".concat(activationToken);
-          _context.prev = 14;
-          _context.next = 17;
+          _context.prev = 16;
+          _context.next = 19;
           return regeneratorRuntime.awrap(sendMail({
             email: user.email,
             subject: "Activate your account",
             message: "Hello".concat(user.name, ", please click on the link to Activate your account: ").concat(activationUrl)
           }));
 
-        case 17:
+        case 19:
           res.status(201).json({
             success: true,
             message: "please check your email:- ".concat(user.email, " to Activate your account!")
           });
-          _context.next = 23;
+          _context.next = 25;
           break;
 
-        case 20:
-          _context.prev = 20;
-          _context.t0 = _context["catch"](14);
+        case 22:
+          _context.prev = 22;
+          _context.t0 = _context["catch"](16);
           return _context.abrupt("return", next(new ErrorHandler(_context.t0.message, 500)));
 
-        case 23:
-          _context.prev = 23;
-          _context.next = 29;
+        case 25:
+          _context.prev = 25;
+          _context.next = 31;
           break;
 
-        case 26:
-          _context.prev = 26;
-          _context.t1 = _context["catch"](23);
+        case 28:
+          _context.prev = 28;
+          _context.t1 = _context["catch"](25);
           return _context.abrupt("return", next(new ErrorHandler(_context.t1.message, 400)));
 
-        case 29:
+        case 31:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[14, 20], [23, 26]]);
+  }, null, null, [[16, 22], [25, 28]]);
 }); // create activation token
 
 var createActivationToken = function createActivationToken(user) {

@@ -28,7 +28,6 @@ const Signup = () => {
     newForm.append("name", name);
     newForm.append("email", email);
     newForm.append("password", password);
-    newForm.append("file", avatar);
     axios
       .post(`${server}/user/create-user`, newForm, config)
       .then((res) => {
@@ -147,7 +146,7 @@ const Signup = () => {
                   <span>Upload a file</span>
                   <input
                     type="file"
-                    name="avatar"
+                    name="file"
                     id="file-input"
                     accept=".jpg,.jpeg,.png"
                     onChange={handleFileInputChange}
