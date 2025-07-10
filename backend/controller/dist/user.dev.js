@@ -178,5 +178,70 @@ router.post("/activation", catchAsyncErrors(function _callee2(req, res, next) {
       }
     }
   }, null, null, [[0, 17]]);
+})); //login user
+
+router.post("/login-user", catchAsyncErrors(function _callee3(req, res, next) {
+  var _req$body2, email, password, user, isPasswordValid;
+
+  return regeneratorRuntime.async(function _callee3$(_context3) {
+    while (1) {
+      switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.prev = 0;
+          _req$body2 = req.body, email = _req$body2.email, password = _req$body2.password;
+
+          if (!(!email || !password)) {
+            _context3.next = 4;
+            break;
+          }
+
+          return _context3.abrupt("return", next(new ErrorHandler("Please provide the all fields!", 400)));
+
+        case 4:
+          _context3.next = 6;
+          return regeneratorRuntime.awrap(User.findOne({
+            email: email
+          }).select("+password"));
+
+        case 6:
+          user = _context3.sent;
+
+          if (user) {
+            _context3.next = 9;
+            break;
+          }
+
+          return _context3.abrupt("return", next(new ErrorHandler("User doesn't exists!", 400)));
+
+        case 9:
+          _context3.next = 11;
+          return regeneratorRuntime.awrap(user.comparePassword(password));
+
+        case 11:
+          isPasswordValid = _context3.sent;
+
+          if (isPasswordValid) {
+            _context3.next = 14;
+            break;
+          }
+
+          return _context3.abrupt("return", next(new ErrorHandler("Please provide the correct information", 400)));
+
+        case 14:
+          sendToken(user, 201, res);
+          _context3.next = 20;
+          break;
+
+        case 17:
+          _context3.prev = 17;
+          _context3.t0 = _context3["catch"](0);
+          return _context3.abrupt("return", next(new ErrorHandler(_context3.t0.message, 500)));
+
+        case 20:
+        case "end":
+          return _context3.stop();
+      }
+    }
+  }, null, null, [[0, 17]]);
 }));
 module.exports = router;
