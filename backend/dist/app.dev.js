@@ -2,7 +2,7 @@
 
 var express = require("express");
 
-var ErrorHandler = require("./utils/ErrorHandler");
+var ErrorHandler = require("./middleware/error");
 
 var app = express();
 

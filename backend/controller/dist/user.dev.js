@@ -13,6 +13,8 @@ var User = require("../model/user");
 
 var ErrorHandler = require("../utils/ErrorHandler");
 
+var catchAsyncErrors = require("../middleware/catchAsyncErrors");
+
 var fs = require("fs");
 
 var jwt = require("jsonwebtoken");
@@ -21,6 +23,8 @@ var sendMail = require("../utils/sendMail");
 
 var _require2 = require("console"),
     error = _require2.error;
+
+var sendToken = require("../utils/jwtToken");
 
 router.post("/create-user", upload.single("file"), function _callee(req, res, next) {
   var _req$body, name, email, password, userEmail, _filename, filePath, filename, fileUrl, user, activationToken, activationUrl;
@@ -51,10 +55,6 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
               console.log(err);
               res.status(500).json({
                 message: "Error deleting file"
-              });
-            } else {
-              res.json({
-                message: "file deleted successfully"
               });
             }
           });
@@ -115,6 +115,68 @@ var createActivationToken = function createActivationToken(user) {
   return jwt.sign(user, process.env.ACTIVATION_SECRET, {
     expiresIn: "5m"
   });
-};
+}; // activate user
 
+
+router.post("/activation", catchAsyncErrors(function _callee2(req, res, next) {
+  var activation_token, newUser, name, email, password, avatar, user;
+  return regeneratorRuntime.async(function _callee2$(_context2) {
+    while (1) {
+      switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          activation_token = req.body.activation_token;
+          newUser = jwt.verify(activation_token, process.env.ACTIVATION_SECRET);
+
+          if (newUser) {
+            _context2.next = 5;
+            break;
+          }
+
+          return _context2.abrupt("return", next(new ErrorHandler("Invalid token", 400)));
+
+        case 5:
+          name = newUser.name, email = newUser.email, password = newUser.password, avatar = newUser.avatar;
+          _context2.next = 8;
+          return regeneratorRuntime.awrap(User.findOne({
+            email: email
+          }));
+
+        case 8:
+          user = _context2.sent;
+
+          if (!user) {
+            _context2.next = 11;
+            break;
+          }
+
+          return _context2.abrupt("return", next(new ErrorHandler("User already exists", 400)));
+
+        case 11:
+          _context2.next = 13;
+          return regeneratorRuntime.awrap(User.create({
+            name: name,
+            email: email,
+            avatar: avatar,
+            password: password
+          }));
+
+        case 13:
+          user = _context2.sent;
+          sendToken(user, 201, res);
+          _context2.next = 20;
+          break;
+
+        case 17:
+          _context2.prev = 17;
+          _context2.t0 = _context2["catch"](0);
+          return _context2.abrupt("return", next(new ErrorHandler(_context2.t0.message, 500)));
+
+        case 20:
+        case "end":
+          return _context2.stop();
+      }
+    }
+  }, null, null, [[0, 17]]);
+}));
 module.exports = router;
