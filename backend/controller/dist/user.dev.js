@@ -26,6 +26,9 @@ var _require2 = require("console"),
 
 var sendToken = require("../utils/jwtToken");
 
+var _require3 = require("../middleware/auth"),
+    isAuthenticated = _require3.isAuthenticated;
+
 router.post("/create-user", upload.single("file"), function _callee(req, res, next) {
   var _req$body, name, email, password, userEmail, _filename, filePath, filename, fileUrl, user, activationToken, activationUrl;
 
@@ -109,11 +112,11 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
       }
     }
   }, null, null, [[16, 22], [25, 28]]);
-}); // create activation token
+});
 
 var createActivationToken = function createActivationToken(user) {
   return jwt.sign(user, process.env.ACTIVATION_SECRET, {
-    expiresIn: "5m"
+    expiresIn: "90d"
   });
 }; // activate user
 
@@ -243,5 +246,46 @@ router.post("/login-user", catchAsyncErrors(function _callee3(req, res, next) {
       }
     }
   }, null, null, [[0, 17]]);
+})); //load user
+
+router.get("/getuser", isAuthenticated, catchAsyncErrors(function _callee4(req, res, next) {
+  var user;
+  return regeneratorRuntime.async(function _callee4$(_context4) {
+    while (1) {
+      switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.prev = 0;
+          _context4.next = 3;
+          return regeneratorRuntime.awrap(User.findById(req.user.id));
+
+        case 3:
+          user = _context4.sent;
+
+          if (user) {
+            _context4.next = 6;
+            break;
+          }
+
+          return _context4.abrupt("return", next(new ErrorHandler("User doesn't exists", 400)));
+
+        case 6:
+          res.status(200).json({
+            success: true,
+            user: user
+          });
+          _context4.next = 12;
+          break;
+
+        case 9:
+          _context4.prev = 9;
+          _context4.t0 = _context4["catch"](0);
+          return _context4.abrupt("return", next(new ErrorHandler(_context4.t0.message, 500)));
+
+        case 12:
+        case "end":
+          return _context4.stop();
+      }
+    }
+  }, null, null, [[0, 9]]);
 }));
 module.exports = router;

@@ -7,16 +7,19 @@ const cors = require("cors");
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
-app.use("/", express.static("uploads"));
-app.use(bodyParser.urlencoded({extended:true,limit:"50mb"}));
+app.use(cors({
+  origin: "http://localhost:3000", // tumhara React app
+  credentials: true                // token bhejne ki permission
+}));
 
+app.use("/", express.static("uploads"));
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 //config
-if(process.env.NODE_ENV !== "PRODUCTION"){
-    require("dotenv").config({
-        path:"backend/config/.env"
-    })
+if (process.env.NODE_ENV !== "PRODUCTION") {
+  require("dotenv").config({
+    path: "backend/config/.env",
+  });
 }
 
 // imports routes
