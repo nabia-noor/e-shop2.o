@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Store from "./redux/store";
 import { loadUser } from "./redux/actions/user";
 
+
 const App = () => {
  useEffect(() =>{
 Store.dispatch(loadUser());

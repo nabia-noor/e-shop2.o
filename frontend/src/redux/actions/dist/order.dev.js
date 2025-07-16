@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getAllOrdersOfAdmin = exports.getAllOrdersOfShop = exports.getAllOrdersOfUser = void 0;
 
-var _axios = _interopRequireDefault(require("axios"));
+var _axios = _interopRequireDefault(require("../../axios"));
 
 var _server = require("../../server");
 

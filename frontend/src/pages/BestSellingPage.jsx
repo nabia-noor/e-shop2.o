@@ -1,40 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import Header from "../components/Layout/Header";
 import Loader from "../components/Layout/Loader";
 import ProductCard from "../components/Route/ProductCard/ProductCard";
-import styles from "../styles/styles";
 import Footer from "../components/Layout/Footer";
+import styles from "../styles/styles";
+import { getAllProducts } from "../redux/actions/product";
 
 const BestSellingPage = () => {
+  const dispatch = useDispatch();
   const [data, setData] = useState([]);
-  const { allProducts, isLoading } = useSelector((state) => state.product);
+  const { allProducts, loading } = useSelector((state) => state.product);
 
   useEffect(() => {
-    const allProductsData = allProducts ? [...allProducts] : [];
-    const sortedData = allProductsData?.sort((a, b) => b.sold_out - a.sold_out);
-    setData(sortedData);
+    if (!allProducts || allProducts.length === 0) {
+      dispatch(getAllProducts());
+    }
+  }, [dispatch, allProducts]);
+
+  useEffect(() => {
+    if (allProducts?.length) {
+      const sorted = [...allProducts].sort(
+        (a, b) => (b.sold_out || 0) - (a.sold_out || 0)
+      );
+      setData(sorted);
+    }
   }, [allProducts]);
+
+  if (loading) return <Loader />;
 
   return (
     <>
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <div>
-          <Header activeHeading={2} />
-          <br />
-          <br />
-          <div className={`${styles.section}`}>
-            <div className="grid grid-cols-1 gap-[20px] md:grid-cols-2 md:gap-[25px] lg:grid-cols-4 lg:gap-[25px] xl:grid-cols-5 xl:gap-[30px] mb-12">
-              {data &&
-                data.map((i, index) => <ProductCard data={i} key={index} />)}
-            </div>
-          </div>
-          <Footer />
+      <Header activeHeading={2} />
+      <br />
+      <br />
+      <div className={styles.section}>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 mb-12">
+          {data.map((item) =>
+            item._id ? <ProductCard key={item._id} data={item} /> : null
+          )}
         </div>
-      )}
+      </div>
+      <Footer />
     </>
   );
 };

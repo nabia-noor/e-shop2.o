@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "../../styles/styles";
-import { categoriesData, productData } from "../../static/data";
+import { categoriesData} from "../../static/data";
+import { backend_url } from "../../server"; 
+
 
 import {
   AiOutlineHeart,
@@ -18,7 +20,7 @@ import Cart from "../cart/Cart";
 import Wishlist from "../Wishlist/Wishlist";
 import { RxCross1 } from "react-icons/rx";
 
-const backend_url = "http//localhost:8000/"
+
 
 const Header = ({ activeHeading }) => {
   const { isAuthenticated, user } = useSelector((state) => state.user);
@@ -180,7 +182,7 @@ const Header = ({ activeHeading }) => {
                     <img
                       src={`${backend_url}${user.avatar}`}
                       className="w-[35px] h-[35px] rounded-full"
-                      alt=""
+                      alt="User Avatar"
                     />
                   </Link>
                 ) : (

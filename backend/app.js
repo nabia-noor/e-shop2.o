@@ -5,28 +5,35 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors({
-  origin: "http://localhost:3000", // tumhara React app
-  credentials: true                // token bhejne ki permission
-}));
+const productRoutes = require("./routes/product");
+const userRoutes = require("./controller/user");
 
-app.use("/", express.static("uploads"));
-app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
-
-//config
+// Load environment variables if not production
 if (process.env.NODE_ENV !== "PRODUCTION") {
   require("dotenv").config({
     path: "backend/config/.env",
   });
 }
 
-// imports routes
-const user = require("./controller/user");
+// Middlewares (IMPORTANT: put these BEFORE routes)
+app.use(
+  cors({
+    origin: "http://localhost:3000", // React frontend URL
+    credentials: true, // Allow cookies/token
+  })
+);
+app.use(express.json());
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
-app.use("/api/v2/user", user);
+// Static files
+app.use("/", express.static("uploads"));
 
-//its for ErrorHandling
+// Routes
+app.use("/api/v1/product", productRoutes);
+app.use("/api/v2/user", userRoutes);
+
+// Error Handling Middleware (keep this last)
 app.use(ErrorHandler);
+
 module.exports = app;
