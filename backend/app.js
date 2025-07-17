@@ -31,7 +31,7 @@ app.use("/", express.static("uploads"));
 
 // Routes
 app.use("/api/v1/product", productRoutes);
-app.use("/api/v2/user", userRoutes);
+app.use("/api/v1/user", userRoutes);
 
 // Error Handling Middleware (keep this last)
 app.use(ErrorHandler);

@@ -14,7 +14,8 @@ const BestSellingPage = () => {
 
   useEffect(() => {
     if (!allProducts || allProducts.length === 0) {
-      dispatch(getAllProducts());
+      console.log("best shellinngnggggg")
+      // dispatch(getAllProducts());
     }
   }, [dispatch, allProducts]);
 

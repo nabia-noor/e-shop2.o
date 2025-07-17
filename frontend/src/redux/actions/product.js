@@ -95,6 +95,8 @@ export const getAllProducts = () => async (dispatch) => {
   try {
     dispatch({ type: "getAllProductsRequest" });
 
+    
+
     const { data } = await axios.get(`${server}/product/all`);
 
     dispatch({

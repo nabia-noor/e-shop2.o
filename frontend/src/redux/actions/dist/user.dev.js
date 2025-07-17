@@ -24,35 +24,34 @@ var loadUser = function loadUser() {
             dispatch({
               type: "LoadUserRequest"
             });
-            _context.next = 4;
-            return regeneratorRuntime.awrap(_axios["default"].get("".concat(_server.server, "/user/getuser"), {
-              withCredentials: true
-            }));
+            console.log("Axios baseURL is:", _axios["default"].defaults.baseURL);
+            _context.next = 5;
+            return regeneratorRuntime.awrap(_axios["default"].get("/user/getuser"));
 
-          case 4:
+          case 5:
             _ref = _context.sent;
             data = _ref.data;
             dispatch({
               type: "LoadUserSuccess",
               payload: data.user
             });
-            _context.next = 12;
+            _context.next = 13;
             break;
 
-          case 9:
-            _context.prev = 9;
+          case 10:
+            _context.prev = 10;
             _context.t0 = _context["catch"](0);
             dispatch({
               type: "LoadUserFail",
               payload: _context.t0.response.data.message
             });
 
-          case 12:
+          case 13:
           case "end":
             return _context.stop();
         }
       }
-    }, null, null, [[0, 9]]);
+    }, null, null, [[0, 10]]);
   };
 };
 
