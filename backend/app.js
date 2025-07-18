@@ -27,7 +27,8 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 // Static files
-app.use("/", express.static("uploads"));
+app.use("/uploads", express.static("uploads"));
+
 
 // Routes
 app.use("/api/v1/product", productRoutes);

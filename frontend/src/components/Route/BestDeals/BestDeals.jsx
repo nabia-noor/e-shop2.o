@@ -4,14 +4,14 @@ import { useSelector } from "react-redux";
 import styles from "../../../styles/styles";
 import ProductCard from "../ProductCard/ProductCard";
 
+
 const BestDeals = () => {
   const [data, setData] = useState([]);
   const { allProducts } = useSelector((state) => state.product);
   useEffect(() => {
-    const allProductsData = allProducts ? [...allProducts] : [];
-    const sortedData = allProductsData?.sort((a,b) => b.sold_out - a.sold_out); 
-    const firstFive = sortedData && sortedData.slice(0, 5);
-    setData(firstFive);
+    const d = allProducts && allProducts.sort((a,b) => b.total_sell - a.total_sell);
+    const firstFive = d.slice(0,5);
+    setData(firstFive); 
   }, [allProducts]);
   
 
@@ -25,7 +25,7 @@ const BestDeals = () => {
            {
             data && data.length !== 0 &&(
               <>
-               {data && data.map((i, index) => <ProductCard data={i} key={index} />)}
+               {data &&  data.map((i, index) => <ProductCard data={i} key={index} />)}
               </>
             )
            }

@@ -37,7 +37,7 @@ app.use(bodyParser.urlencoded({
   limit: "50mb"
 })); // Static files
 
-app.use("/", express["static"]("uploads")); // Routes
+app.use("/uploads", express["static"]("uploads")); // Routes
 
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/user", userRoutes); // Error Handling Middleware (keep this last)

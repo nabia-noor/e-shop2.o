@@ -15,7 +15,7 @@ const BestSellingPage = () => {
   useEffect(() => {
     if (!allProducts || allProducts.length === 0) {
       console.log("best shellinngnggggg")
-      // dispatch(getAllProducts());
+      dispatch(getAllProducts());
     }
   }, [dispatch, allProducts]);
 
@@ -38,7 +38,7 @@ const BestSellingPage = () => {
       <div className={styles.section}>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 mb-12">
           {data.map((item) =>
-            item._id ? <ProductCard key={item._id} data={item} /> : null
+            item.id ? <ProductCard key={item.id} data={item} /> : null
           )}
         </div>
       </div>

@@ -18,38 +18,37 @@ import { toast } from "react-toastify";
 import Ratings from "../../Products/Ratings";
 
 const ProductCard = ({ data, isEvent }) => {
-  
-  // Hooks must be at top-level
-  
+  // Hooks must always be at the top level — no conditions around them
   const { wishlist } = useSelector((state) => state.wishlist);
   const { cart } = useSelector((state) => state.cart);
   const [click, setClick] = useState(false);
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
 
-  
-
   useEffect(() => {
-    // Safely check if data._id exists
-    if (wishlist && data?._id && wishlist.find((i) => i._id === data._id)) {
+    // Check only if data is defined
+    if (data && wishlist && wishlist.find((i) => i._id === data._id)) {
       setClick(true);
     } else {
       setClick(false);
     }
-  }, [wishlist, data._id]);
+  }, [wishlist, data]);
 
-  const removeFromWishlistHandler = (product) => {
+  // If no data, don't render anything
+  if (!data) return null;
+
+  const removeFromWishlistHandler = () => {
     setClick(false);
-    dispatch(removeFromWishlist(product));
+    dispatch(removeFromWishlist(data));
   };
 
-  const addToWishlistHandler = (product) => {
+  const addToWishlistHandler = () => {
     setClick(true);
-    dispatch(addToWishlist(product));
+    dispatch(addToWishlist(data));
   };
 
-  const addToCartHandler = (id) => {
-    const isItemExists = cart && cart.find((i) => i._id === id);
+  const addToCartHandler = () => {
+    const isItemExists = cart && cart.find((i) => i._id === data._id);
     if (isItemExists) {
       toast.error("Item already in cart!");
     } else {
@@ -63,67 +62,84 @@ const ProductCard = ({ data, isEvent }) => {
     }
   };
 
+console.log("Full product data:", data);
+
+
+
   return (
     <div className="w-full h-[370px] bg-white rounded-lg shadow-sm p-3 relative cursor-pointer">
       <div className="flex justify-end"></div>
-      <Link
-        to={`${
-          isEvent === true
-            ? `/product/${data._id}?isEvent=true`
-            : `/product/${data._id}`
-        }`}
-      >
-        <img
-          src={data.images && data.images[0]?.url}
-          alt={data.name || "Product Image"}
-          className="w-full h-[170px] object-contain"
-        />
-      </Link>
-      <Link to={`/shop/preview/${data?.shop?._id}`}>
-        <h5 className={`${styles.shop_name}`}>{data.shop?.name || "Shop"}</h5>
-      </Link>
-      <Link
-        to={`${
-          isEvent === true
-            ? `/product/${data._id}?isEvent=true`
-            : `/product/${data._id}`
-        }`}
-      >
-        <h4 className="pb-3 font-[500]">
-          {data.name && data.name.length > 40
-            ? data.name.slice(0, 40) + "..."
-            : data.name}
-        </h4>
 
-        <div className="flex">
-          <Ratings rating={data?.ratings} />
-        </div>
+      {/* Product image and link */}
+      {data._id && (
+        <Link
+          to={
+            isEvent === true
+              ? `/product/${data._id}?isEvent=true`
+              : `/product/${data._id}`
+          }
+        >
+          <img
+          src={`${data.images && data.images[0] ? data.images[0] : "/default-image.png"}`}
 
-        <div className="py-2 flex items-center justify-between">
+            alt={data.name || "Product"}
+            className="w-full h-[170px] object-contain"
+          />
+        </Link>
+      )}
+
+      {/* Shop link */}
+      {data.shop?._id && (
+        <Link to={`/shop/preview/${data.shop._id}`}>
+          <h5 className={`${styles.shop_name}`}>{data.shop.name}</h5>
+        </Link>
+      )}
+
+      {/* Product name, ratings and price */}
+      {data._id && (
+        <Link
+          to={
+            isEvent === true
+              ? `/product/${data._id}?isEvent=true`
+              : `/product/${data._id}`
+          }
+        >
+          <h4 className="pb-3 font-[500]">
+            {data.name?.length > 40
+              ? data.name.slice(0, 40) + "..."
+              : data.name}
+          </h4>
+
           <div className="flex">
-            <h5 className={`${styles.productDiscountPrice}`}>
-              {data.originalPrice === 0
-                ? data.originalPrice
-                : data.discountPrice}
-              $
-            </h5>
-            <h4 className={`${styles.price}`}>
-              {data.originalPrice ? data.originalPrice + " $" : null}
-            </h4>
+            <Ratings rating={data?.ratings} />
           </div>
-          <span className="font-[400] text-[17px] text-[#68d284]">
-            {data?.sold_out} sold
-          </span>
-        </div>
-      </Link>
 
-      {/* side options */}
+          <div className="py-2 flex items-center justify-between">
+            <div className="flex">
+              <h5 className={`${styles.productDiscountPrice}`}>
+                {data.originalPrice === 0
+                  ? data.originalPrice
+                  : data.discountPrice}
+                $
+              </h5>
+              <h4 className={`${styles.price}`}>
+                {data.originalPrice ? data.originalPrice + " $" : null}
+              </h4>
+            </div>
+            <span className="font-[400] text-[17px] text-[#68d284]">
+              {data?.sold_out} sold
+            </span>
+          </div>
+        </Link>
+      )}
+
+      {/* Action buttons */}
       <div>
         {click ? (
           <AiFillHeart
             size={22}
             className="cursor-pointer absolute right-2 top-5"
-            onClick={() => removeFromWishlistHandler(data)}
+            onClick={removeFromWishlistHandler}
             color="red"
             title="Remove from wishlist"
           />
@@ -131,7 +147,7 @@ const ProductCard = ({ data, isEvent }) => {
           <AiOutlineHeart
             size={22}
             className="cursor-pointer absolute right-2 top-5"
-            onClick={() => addToWishlistHandler(data)}
+            onClick={addToWishlistHandler}
             color="#333"
             title="Add to wishlist"
           />
@@ -146,11 +162,11 @@ const ProductCard = ({ data, isEvent }) => {
         <AiOutlineShoppingCart
           size={25}
           className="cursor-pointer absolute right-2 top-24"
-          onClick={() => addToCartHandler(data._id)}
+          onClick={addToCartHandler}
           color="#444"
           title="Add to cart"
         />
-        {open ? <ProductDetailsCard setOpen={setOpen} data={data} /> : null}
+        {open && <ProductDetailsCard setOpen={setOpen} data={data} />}
       </div>
     </div>
   );
