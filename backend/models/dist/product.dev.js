@@ -1,6 +1,5 @@
 "use strict";
 
-// backend/model/product.js
 var mongoose = require('mongoose');
 
 var productSchema = new mongoose.Schema({
@@ -16,6 +15,11 @@ var productSchema = new mongoose.Schema({
   category: String,
   stock: Number,
   images: [String],
+  // e.g., ["https://..."]
+  sold: {
+    type: Number,
+    "default": 0
+  },
   createdAt: {
     type: Date,
     "default": Date.now

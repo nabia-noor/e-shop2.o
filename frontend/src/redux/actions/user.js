@@ -10,11 +10,12 @@ export const loadUser = () => async (dispatch) => {
 
     console.log("Axios baseURL is:", axios.defaults.baseURL);
 
-    const { data } = await axios.get("/user/getuser");
+    
+    // const { data } = await axios.get("/user/getuser");
 
     dispatch({
       type: "LoadUserSuccess",
-      payload: data.user,
+      payload: null, 
     });
   } catch (error) {
     dispatch({
@@ -24,14 +25,11 @@ export const loadUser = () => async (dispatch) => {
   }
 };
 
-// 🔻 ADD THESE PLACEHOLDER FUNCTIONS BELOW 🔻
-
 // Update user information
 export const updateUserInformation = (userData) => async (dispatch) => {
   try {
     console.log("Updating user info...", userData);
-    // You can add your actual axios request here later
-    // Example: await axios.put(`${server}/user/update`, userData);
+
   } catch (error) {
     console.error("Update failed", error);
   }
@@ -41,7 +39,7 @@ export const updateUserInformation = (userData) => async (dispatch) => {
 export const updatUserAddress = (addressData) => async (dispatch) => {
   try {
     console.log("Updating user address...", addressData);
-    // Example: await axios.put(`${server}/user/address`, addressData);
+
   } catch (error) {
     console.error("Address update failed", error);
   }

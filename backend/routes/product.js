@@ -1,20 +1,34 @@
-// backend/routes/product.js
-
 const express = require("express");
 const router = express.Router();
+const Product = require("../models/product");
 
-// Example data - aise hi demo ke liye
-const products = [
-  { id: 1, name: "Product 1", price: 100 },
-  { id: 2, name: "Product 2", price: 150 },
-];
+// All products route
+router.get("/all", async (req, res) => {
+  try {
+    const products = await Product.find({});
+    res.json({
+      success: true,
+      products,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
-// Route handle karega GET /api/v1/product/all
-router.get("/all", (req, res) => {
-  res.json({
-    success: true,
-    products: products,
-  });
+// Best-selling products route
+router.get("/best-selling", async (req, res) => {
+  try {
+    const products = await Product.find({});
+    const bestSelling = products
+      .sort((a, b) => (b.sold || 0) - (a.sold || 0))
+      .slice(0, 5);
+    res.json({
+      success: true,
+      products: bestSelling,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 module.exports = router;

@@ -6,7 +6,7 @@ var catchAsyncErrors = require("./catchAsyncErrors");
 
 var jwt = require("jsonwebtoken");
 
-var User = require("../model/user");
+var User = require("../models/user");
 
 exports.isAuthenticated = catchAsyncErrors(function _callee(req, res, next) {
   var token, decoded;

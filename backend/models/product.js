@@ -1,5 +1,3 @@
-// backend/model/product.js
-
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
@@ -14,7 +12,11 @@ const productSchema = new mongoose.Schema({
   description: String,
   category: String,
   stock: Number,
-  images: [String],
+  images: [String], // e.g., ["https://..."]
+  sold: {
+    type: Number,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

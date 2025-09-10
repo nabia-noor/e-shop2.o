@@ -9,7 +9,7 @@ var _require = require("../multer"),
 
 var router = express.Router();
 
-var User = require("../model/user");
+var User = require("../models/user");
 
 var ErrorHandler = require("../utils/ErrorHandler");
 

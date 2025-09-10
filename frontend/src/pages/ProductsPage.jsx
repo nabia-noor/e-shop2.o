@@ -23,7 +23,7 @@ const ProductsPage = () => {
       setData(d);
     }
     //    window.scrollTo(0,0);
-  }, [allProducts]);
+  }, [allProducts, categoryData]);
 
   return (
     <>
@@ -32,6 +32,16 @@ const ProductsPage = () => {
       ) : (
         <div>
           <Header activeHeading={3} />
+
+          {/* Image added here */}
+          <div style={{ textAlign: "center", margin: "20px 0" }}>
+            <img
+              src="http://localhost:8000/uploads/abillion-Nf5fSqHm-iY-unsplash.jpg"
+              alt="Uploaded"
+              style={{ maxWidth: "100%", height: "auto", borderRadius: "8px" }}
+            />
+          </div>
+
           <br />
           <br />
           <div className={`${styles.section}`}>
