@@ -24,18 +24,19 @@ const BestSellingPage = () => {
           {products.map((product) => (
             <div key={product._id} className="border p-4 rounded-lg shadow">
               <img
-              src={
-  product.images
-    ? product.images[0]
-    : "https://dummyimage.com/300x200/cccccc/000000&text=No+Image"
-}
-
+                src={
+                  product.image_Url && product.image_Url[0]
+                    ? product.image_Url[0].url
+                    : "https://dummyimage.com/300x200/cccccc/000000&text=No+Image"
+                }
                 alt={product.name}
                 className="w-full h-40 object-cover rounded mb-3"
               />
               <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
-              <p className="mb-1">Price: ${product.price}</p>
-              <p className="text-gray-600">Sold: {product.sold}</p>
+              <p className="mb-1">
+                Price: ${product.discount_price ? product.discount_price : product.price}
+              </p>
+              <p className="text-gray-600">Sold: {product.total_sell}</p>
             </div>
           ))}
         </div>
