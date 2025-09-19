@@ -1,50 +1,33 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { server } from "../server"; // example: "http://localhost:8000/api/v1"
+import React, { useEffect, useState } from 'react'
+import Header from '../components/Layout/Header'
+import styles from '../styles/styles'
+import { useSearchParams } from 'react-router-dom'
+import { productData } from '../static/data'
+import ProductCard from "../components/Route/ProductCard/ProductCard"
 
 const BestSellingPage = () => {
-  const [products, setProducts] = useState([]);
+    const [data,setData] = useState([]);
 
-  useEffect(() => {
-    axios
-      .get(`${server}/product/best-selling`)
-      .then((res) => {
-        setProducts(res.data.products);
-      })
-      .catch((err) => {
-        console.error("Error fetching best-selling products:", err);
-      });
-  }, []);
+   useEffect(() => {
+   const d = productData && productData.sort((a,b) => b.total_sell - a.total_sell);
+   setData(d); 
+    
+   }, [])
+   
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Best Selling Products</h2>
-      {products && products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div key={product._id} className="border p-4 rounded-lg shadow">
-              <img
-                src={
-                  product.image_Url && product.image_Url[0]
-                    ? product.image_Url[0].url
-                    : "https://dummyimage.com/300x200/cccccc/000000&text=No+Image"
-                }
-                alt={product.name}
-                className="w-full h-40 object-cover rounded mb-3"
-              />
-              <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
-              <p className="mb-1">
-                Price: ${product.discount_price ? product.discount_price : product.price}
-              </p>
-              <p className="text-gray-600">Sold: {product.total_sell}</p>
-            </div>
-          ))}
+    <div>
+      <Header activHeading={2} />
+      <br/>
+      <br/>
+      <div className={`${styles.section}`}>
+        <div className='grid grid-cols-1 gap-[20px] md:grid-cols-2 md:gap-[25px] lg:grid-cols-4 lg:gap-[25px] xl:grid-cols-5 xl:gap-[30px] mb-12'>
+          {
+            data && data.map((i,index) => <ProductCard data={i} key={index} />)}
         </div>
-      ) : (
-        <p>No best-selling products available.</p>
-      )}
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default BestSellingPage;
+export default BestSellingPage
