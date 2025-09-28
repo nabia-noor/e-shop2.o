@@ -1,3 +1,6 @@
+import macbookImg from "../Assests/macbook.png";
+import shoesImg from "../Assests/shoes.png";
+
 // navigation Data
 export const navItems = [
   {
@@ -330,11 +333,11 @@ export const productData = [
     image_Url: [
       {
         public_id: "test",
-        url: "https://www.istorebangladesh.com/images/thumbs/0000286_macbook-pro-m1_550.png",
+        url:macbookImg, 
       },
       {
         public_id: "test",
-        url: "https://www.istorebangladesh.com/images/thumbs/0000286_macbook-pro-m1_550.png",
+        url: macbookImg,
       },
     ],
     shop: {
@@ -392,11 +395,11 @@ export const productData = [
     image_Url: [
       {
         public_id: "test",
-        url: "https://mirzacdns3.s3.ap-south-1.amazonaws.com/cache/catalog/RLV0015/2-800x800.jpg",
+        url:  shoesImg,
       },
       {
         public_id: "test",
-        url: "https://mirzacdns3.s3.ap-south-1.amazonaws.com/cache/catalog/RLV0015/2-800x800.jpg",
+        url:   shoesImg,
       },
     ],
     shop: {

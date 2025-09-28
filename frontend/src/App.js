@@ -6,9 +6,11 @@ import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import Store from "./redux/store";
 import { loadUser } from "./redux/actions/user";
-
+import ProductDetailsPage from "./pages/ProductDetailsPage";
 
 const App = () => {
+
+  
  useEffect(() =>{
 Store.dispatch(loadUser());
  }, []);
@@ -24,6 +26,9 @@ Store.dispatch(loadUser());
          <Route path="/events" element={<EventsPage />} />
           <Route path="/faq" element={<FAQPage />} />
   <Route path="/profile" element={<ProfilePage />} />
+  <Route path="/product/:product_name" element={<ProductDetailsPage />} />
+
+  
    </Routes>
    <ToastContainer
    position="bottom-center"

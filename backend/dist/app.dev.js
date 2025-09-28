@@ -30,7 +30,7 @@ app.use(cors({
   credentials: true // Allow cookies/token
 
 }));
-app.use(express.json());
+app.use(express.json);
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({
   extended: true,

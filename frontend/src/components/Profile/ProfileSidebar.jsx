@@ -27,7 +27,12 @@ const ProfileSidebar = ({ setActive, active }) => {
         navigate("/login");
       })
       .catch((error) => {
-        console.log(error.response.data.message);
+        if (error.response){
+      console.log( error.response.data.message);
+        }else{
+          console.log("Network Error:", error.message);
+        }
+        
       });
   };
   return (

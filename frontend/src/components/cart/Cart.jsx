@@ -17,7 +17,7 @@ const Cart = ({ setOpenCart }) => {
   };
 
   const totalPrice = cart.reduce(
-    (acc, item) => acc + item.qty * item.discountPrice,
+    (acc, item) => acc + item.qty * (item.discountPrice || 0),
     0
   );
 
@@ -37,7 +37,7 @@ const Cart = ({ setOpenCart }) => {
                 onClick={() => setOpenCart(false)}
               />
             </div>
-            <h5>Cart Items is empty!</h5>
+            <h5>Cart is empty!</h5>
           </div>
         ) : (
           <>
@@ -73,7 +73,7 @@ const Cart = ({ setOpenCart }) => {
             </div>
 
             <div className="px-5 mb-3">
-              {/* checkout buttons */}
+              {/* checkout button */}
               <Link to="/checkout">
                 <div
                   className={`h-[45px] flex items-center justify-center w-[100%] bg-[#e44343] rounded-[5px]`}
@@ -93,10 +93,16 @@ const Cart = ({ setOpenCart }) => {
 
 const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
   const [value, setValue] = useState(data.qty);
-  const totalPrice = data.discountPrice * value;
+  const totalPrice = (data?.discountPrice || 0) * value;
+
+  // ✅ safe image handling
+  const productImage =
+    data?.images && data.images.length > 0
+      ? data.images[0].url
+      : data?.image_Url || "";
 
   const increment = (data) => {
-    if (data.stock < value) {
+    if (data.stock < value + 1) {
       toast.error("Product stock limited!");
     } else {
       setValue(value + 1);
@@ -130,14 +136,14 @@ const CartSingle = ({ data, quantityChangeHandler, removeFromCartHandler }) => {
           </div>
         </div>
         <img
-          src={`${data?.images[0]?.url}`}
-          alt=""
+          src={productImage}
+          alt={data?.name || "product"}
           className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
         />
         <div className="pl-[5px]">
-          <h1>{data.name}</h1>
+          <h1>{data?.name}</h1>
           <h4 className="font-[400] text-[15px] text-[#00000082]">
-            ${data.discountPrice} * {value}
+            ${data?.discountPrice} × {value}
           </h4>
           <h4 className="font-[600] text-[17px] pt-[3px] text-[#d02222] font-Roboto">
             US${totalPrice}

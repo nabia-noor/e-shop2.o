@@ -33,7 +33,7 @@ const Wishlist = ({ setOpenWishlist }) => {
                 onClick={() => setOpenWishlist(false)}
               />
             </div>
-            <h5>Wishlist Items is empty!</h5>
+            <h5>Wishlist is empty!</h5>
           </div>
         ) : (
           <>
@@ -76,7 +76,13 @@ const Wishlist = ({ setOpenWishlist }) => {
 
 const CartSingle = ({ data, removeFromWishlistHandler, addToCartHandler }) => {
   const [value, setValue] = useState(1);
-  const totalPrice = data.discountPrice * value;
+  const totalPrice = (data?.discountPrice || 0) * value;
+
+  // image safe access (agar images array hai)
+  const productImage =
+    data?.images && data.images.length > 0
+      ? data.images[0].url
+      : data?.image_Url || "";
 
   return (
     <div className="border-b p-4">
@@ -86,13 +92,13 @@ const CartSingle = ({ data, removeFromWishlistHandler, addToCartHandler }) => {
           onClick={() => removeFromWishlistHandler(data)}
         />
         <img
-          src={`${data?.images[0]?.url}`}
-          alt=""
+          src={productImage}
+          alt={data?.name || "product"}
           className="w-[130px] h-min ml-2 mr-2 rounded-[5px]"
         />
 
         <div className="pl-[5px]">
-          <h1>{data.name}</h1>
+          <h1>{data?.name}</h1>
           <h4 className="font-[600] pt-3 800px:pt-[3px] text-[17px] text-[#d02222] font-Roboto">
             US${totalPrice}
           </h4>
@@ -101,7 +107,7 @@ const CartSingle = ({ data, removeFromWishlistHandler, addToCartHandler }) => {
           <BsCartPlus
             size={20}
             className="cursor-pointer"
-            tile="Add to cart"
+            title="Add to cart"
             onClick={() => addToCartHandler(data)}
           />
         </div>
