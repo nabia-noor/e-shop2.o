@@ -29,17 +29,19 @@ const Signup = () => {
     newForm.append("name", name);
     newForm.append("email", email);
     newForm.append("password", password);
+
     axios
       .post(`${server}/user/create-user`, newForm, config)
       .then((res) => {
-      toast.success(res.data.message); 
-       setName("");
-       setEmail("");
-       setPassword("");
-       setAvatar();
+        console.log("res ------>>", res);
+        toast.success(res.data.message);
+        setName("");
+        setEmail("");
+        setPassword("");
+        setAvatar(null);
       })
       .catch((error) => {
-      toast.error(error.response.data.message);
+        toast.error(error.response.data.message);
       });
   };
 

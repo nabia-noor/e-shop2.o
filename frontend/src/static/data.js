@@ -227,17 +227,19 @@ export const categoriesData = [
     image_Url:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvBQPQMVNRd6TtDkGs2dCri0Y-rxKkFOiEWw&usqp=CAU",
   },
- {
-  id: 6,
-  title: "Gifts",
-  subTitle: "",
-  image_Url: "https://images.unsplash.com/photo-1607082350920-b7df76a35f3f?auto=format&fit=crop&w=700&q=80"
-},
+  {
+    id: 6,
+    title: "Gifts",
+    subTitle: "",
+    image_Url:
+      "https://images.unsplash.com/photo-1607082350920-b7df76a35f3f?auto=format&fit=crop&w=700&q=80",
+  },
   {
     id: 7,
     title: "Pet Care",
     subTitle: "",
-    image_Url: "https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=700&q=80",
+    image_Url:
+      "https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&w=700&q=80",
   },
   {
     id: 8,
@@ -333,11 +335,11 @@ export const productData = [
     image_Url: [
       {
         public_id: "test",
-        url:macbookImg, 
+        url: "https://tse3.mm.bing.net/th/id/OIP.5u5-4BRhBO7KMrvcE1JiZwHaEK?rs=1&pid=ImgDetMain&o=7&rm=3",
       },
       {
         public_id: "test",
-        url: macbookImg,
+        url: "https://tse3.mm.bing.net/th/id/OIP.5u5-4BRhBO7KMrvcE1JiZwHaEK?rs=1&pid=ImgDetMain&o=7&rm=3",
       },
     ],
     shop: {
@@ -395,11 +397,11 @@ export const productData = [
     image_Url: [
       {
         public_id: "test",
-        url:  shoesImg,
+        url: "https://tse2.mm.bing.net/th/id/OIP.VoXXZWHOcYsMtnjlLJJUFgHaEh?rs=1&pid=ImgDetMain&o=7&rm=3",
       },
       {
         public_id: "test",
-        url:   shoesImg,
+        url: "https://tse2.mm.bing.net/th/id/OIP.VoXXZWHOcYsMtnjlLJJUFgHaEh?rs=1&pid=ImgDetMain&o=7&rm=3",
       },
     ],
     shop: {

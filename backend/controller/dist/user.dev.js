@@ -36,18 +36,20 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
+          console.log("req.body------------------------->>>", req.body);
+          console.log("req.file >>>", req.file);
           _req$body = req.body, name = _req$body.name, email = _req$body.email, password = _req$body.password;
           console.log(name, email);
-          _context.next = 4;
+          _context.next = 6;
           return regeneratorRuntime.awrap(User.findOne({
             email: email
           }));
 
-        case 4:
+        case 6:
           userEmail = _context.sent;
 
           if (!userEmail) {
-            _context.next = 10;
+            _context.next = 12;
             break;
           }
 
@@ -63,7 +65,7 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
           });
           return _context.abrupt("return", next(new ErrorHandler("User already exists", 400)));
 
-        case 10:
+        case 12:
           filename = req.file.filename;
           fileUrl = path.join(filename);
           user = {
@@ -75,43 +77,43 @@ router.post("/create-user", upload.single("file"), function _callee(req, res, ne
           console.log(user);
           activationToken = createActivationToken(user);
           activationUrl = "http://localhost:3000/activation/".concat(activationToken);
-          _context.prev = 16;
-          _context.next = 19;
+          _context.prev = 18;
+          _context.next = 21;
           return regeneratorRuntime.awrap(sendMail({
             email: user.email,
             subject: "Activate your account",
             message: "Hello".concat(user.name, ", please click on the link to Activate your account: ").concat(activationUrl)
           }));
 
-        case 19:
+        case 21:
           res.status(201).json({
             success: true,
             message: "please check your email:- ".concat(user.email, " to Activate your account!")
           });
-          _context.next = 25;
+          _context.next = 27;
           break;
 
-        case 22:
-          _context.prev = 22;
-          _context.t0 = _context["catch"](16);
+        case 24:
+          _context.prev = 24;
+          _context.t0 = _context["catch"](18);
           return _context.abrupt("return", next(new ErrorHandler(_context.t0.message, 500)));
 
-        case 25:
-          _context.prev = 25;
-          _context.next = 31;
+        case 27:
+          _context.prev = 27;
+          _context.next = 33;
           break;
 
-        case 28:
-          _context.prev = 28;
-          _context.t1 = _context["catch"](25);
+        case 30:
+          _context.prev = 30;
+          _context.t1 = _context["catch"](27);
           return _context.abrupt("return", next(new ErrorHandler(_context.t1.message, 400)));
 
-        case 31:
+        case 33:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[16, 22], [25, 28]]);
+  }, null, null, [[18, 24], [27, 30]]);
 });
 
 var createActivationToken = function createActivationToken(user) {
@@ -160,8 +162,13 @@ router.post("/activation", catchAsyncErrors(function _callee2(req, res, next) {
           return regeneratorRuntime.awrap(User.create({
             name: name,
             email: email,
-            avatar: avatar,
-            password: password
+            password: password,
+            avatar: {
+              public_id: "local",
+              // temporary id
+              url: "/uploads/".concat(avatar) // uploads folder se url banega
+
+            }
           }));
 
         case 13:
@@ -191,61 +198,62 @@ router.post("/login-user", catchAsyncErrors(function _callee3(req, res, next) {
       switch (_context3.prev = _context3.next) {
         case 0:
           _context3.prev = 0;
+          console.log("req.body", req.body);
           _req$body2 = req.body, email = _req$body2.email, password = _req$body2.password;
 
           if (!(!email || !password)) {
-            _context3.next = 4;
+            _context3.next = 5;
             break;
           }
 
           return _context3.abrupt("return", next(new ErrorHandler("Please provide the all fields!", 400)));
 
-        case 4:
-          _context3.next = 6;
+        case 5:
+          _context3.next = 7;
           return regeneratorRuntime.awrap(User.findOne({
             email: email
           }).select("+password"));
 
-        case 6:
+        case 7:
           user = _context3.sent;
 
           if (user) {
-            _context3.next = 9;
+            _context3.next = 10;
             break;
           }
 
           return _context3.abrupt("return", next(new ErrorHandler("User doesn't exists!", 400)));
 
-        case 9:
-          _context3.next = 11;
+        case 10:
+          _context3.next = 12;
           return regeneratorRuntime.awrap(user.comparePassword(password));
 
-        case 11:
+        case 12:
           isPasswordValid = _context3.sent;
 
           if (isPasswordValid) {
-            _context3.next = 14;
+            _context3.next = 15;
             break;
           }
 
           return _context3.abrupt("return", next(new ErrorHandler("Please provide the correct information", 400)));
 
-        case 14:
+        case 15:
           sendToken(user, 201, res);
-          _context3.next = 20;
+          _context3.next = 21;
           break;
 
-        case 17:
-          _context3.prev = 17;
+        case 18:
+          _context3.prev = 18;
           _context3.t0 = _context3["catch"](0);
           return _context3.abrupt("return", next(new ErrorHandler(_context3.t0.message, 500)));
 
-        case 20:
+        case 21:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[0, 17]]);
+  }, null, null, [[0, 18]]);
 })); //load user
 
 router.get("/getuser", isAuthenticated, catchAsyncErrors(function _callee4(req, res, next) {

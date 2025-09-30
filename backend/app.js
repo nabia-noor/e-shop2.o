@@ -22,19 +22,18 @@ app.use(
     credentials: true, // Allow cookies/token
   })
 );
-app.use(express.json)
+app.use(express.json);
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 
 // Static files
 app.use("/uploads", express.static("uploads"));
 
-
 // Routes
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/user", userRoutes);
 
-// Error Handling Middleware 
+// Error Handling Middleware
 app.use(ErrorHandler);
 
 module.exports = app;

@@ -9,10 +9,12 @@ const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const sendMail = require("../utils/sendMail");
 const { error } = require("console");
-const sendToken = require("../utils/jwtToken")
+const sendToken = require("../utils/jwtToken");
 const { isAuthenticated } = require("../middleware/auth");
 
 router.post("/create-user", upload.single("file"), async (req, res, next) => {
+  console.log("req.body------------------------->>>", req.body);
+  console.log("req.file >>>", req.file);
   const { name, email, password } = req.body;
   console.log(name, email);
   const userEmail = await User.findOne({ email });
@@ -24,7 +26,7 @@ router.post("/create-user", upload.single("file"), async (req, res, next) => {
       if (err) {
         console.log(err);
         res.status(500).json({ message: "Error deleting file" });
-      } 
+      }
     });
     return next(new ErrorHandler("User already exists", 400));
   }
@@ -89,14 +91,17 @@ router.post(
 
       if (user) {
         return next(new ErrorHandler("User already exists", 400));
-
-
       }
+
+      // 👇 yahan avatar ko object bana kar save karna hai
       user = await User.create({
         name,
         email,
-        avatar,
         password,
+        avatar: {
+          public_id: "local", // temporary id
+          url: `/uploads/${avatar}`, // uploads folder se url banega
+        },
       });
 
       sendToken(user, 201, res);
@@ -106,12 +111,12 @@ router.post(
   })
 );
 
-
 //login user
 router.post(
   "/login-user",
   catchAsyncErrors(async (req, res, next) => {
     try {
+      console.log("req.body", req.body);
       const { email, password } = req.body;
 
       if (!email || !password) {
