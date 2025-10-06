@@ -57,6 +57,18 @@ Object.defineProperty(exports, "ProfilePage", {
     return _ProfilePage["default"];
   }
 });
+Object.defineProperty(exports, "OrderSuccessPage", {
+  enumerable: true,
+  get: function get() {
+    return _OrderSuccessPage["default"];
+  }
+});
+Object.defineProperty(exports, "ProductDetailsPage", {
+  enumerable: true,
+  get: function get() {
+    return _ProductDetailsPage["default"];
+  }
+});
 
 var _Login = _interopRequireDefault(require("../src/pages/Login"));
 
@@ -75,5 +87,9 @@ var _EventsPage = _interopRequireDefault(require("../src/pages/EventsPage"));
 var _FAQPage = _interopRequireDefault(require("../src/pages/FAQPage"));
 
 var _ProfilePage = _interopRequireDefault(require("./pages/ProfilePage"));
+
+var _OrderSuccessPage = _interopRequireDefault(require("../src/pages/OrderSuccessPage"));
+
+var _ProductDetailsPage = _interopRequireDefault(require("../src/pages/ProductDetailsPage"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }

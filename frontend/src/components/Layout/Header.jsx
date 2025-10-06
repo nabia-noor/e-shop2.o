@@ -177,151 +177,56 @@ const Header = ({ activeHeading }) => {
             {/* profile */}
             <div className={`${styles.noramlFlex}`}>
               <div className="relative cursor-pointer mr-[15px]">
-                <Link to="/login">
-                  <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
-                </Link>
-              </div>
-            </div>
-
-            {/* popups */}
-            {openCart && <Cart setOpenCart={setOpenCart} />}
-            {openWishlist && <Wishlist setOpenWishlist={setOpenWishlist} />}
-          </div>
-        </div>
-      </div>
-
-      {/* mobile header */}
-      <div
-        className={`${
-          active ? "shadow-sm fixed top-0 left-0 z-10" : ""
-        } w-full h-[60px] bg-[#fff] z-50 top-0 left-0 shadow-sm 800px:hidden`}
-      >
-        <div className="w-full flex items-center justify-between">
-          <div>
-            <BiMenuAltLeft
-              size={40}
-              className="ml-4"
-              onClick={() => setOpen(true)}
-            />
-          </div>
-          <div>
-            <Link to="/">
-              <img
-                src="https://shopo.quomodothemes.website/assets/images/logo.svg"
-                alt=""
-                className="mt-3 cursor-pointer"
-              />
-            </Link>
-          </div>
-          <div>
-            <div
-              className="relative mr-[20px]"
-              onClick={() => setOpenCart(true)}
-            >
-              <AiOutlineShoppingCart size={30} />
-              <span className="absolute right-0 top-0 rounded-full bg-[#3bc177] w-4 h-4 text-white font-mono text-[12px] leading-tight text-center">
-                {cart && cart.length}
-              </span>
-            </div>
-          </div>
-
-          {/* popups */}
-          {openCart && <Cart setOpenCart={setOpenCart} />}
-          {openWishlist && <Wishlist setOpenWishlist={setOpenWishlist} />}
-        </div>
-
-        {/* sidebar */}
-        {open && (
-          <div className="fixed w-full bg-[#0000005f] z-20 h-full top-0 left-0">
-            <div className="fixed w-[70%] bg-[#fff] h-screen top-0 left-0 z-10 overflow-y-scroll">
-              <div className="w-full justify-between flex pr-3">
-                <div>
-                  <div
-                    className="relative mr-[15px]"
-                    onClick={() => {
-                      setOpenWishlist(true);
-                      setOpen(false);
-                    }}
-                  >
-                    <AiOutlineHeart size={30} className="mt-5 ml-3" />
-                    <span className="absolute right-0 top-0 rounded-full bg-[#3bc177] w-4 h-4 text-white font-mono text-[12px] leading-tight text-center">
-                      {wishlist && wishlist.length}
-                    </span>
-                  </div>
-                </div>
-                <RxCross1
-                  size={30}
-                  className="ml-4 mt-5"
-                  onClick={() => setOpen(false)}
-                />
-              </div>
-
-              <div className="my-8 w-[92%] m-auto h-[40px] relative">
-                <input
-                  type="search"
-                  placeholder="Search Product..."
-                  className="h-[40px] w-full px-2 border-[#3957db] border-[2px] rounded-md"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-                {searchData && (
-                  <div className="absolute bg-[#fff] z-10 shadow w-full left-0 p-3">
-                    {searchData.map((i) => {
-                      const Product_name = i.name.replace(/\s+/g, "-");
-                      return (
-                        <Link key={i._id} to={`/product/${Product_name}`}>
-                          <div className="flex items-center">
-                            <img
-                              src={i.image_Url[0]?.url}
-                              alt=""
-                              className="w-[50px] mr-2"
-                            />
-                            <h5>{i.name}</h5>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <Navbar active={activeHeading} />
-
-              <div className={`${styles.button} ml-4 !rounded-[4px]`}>
-                <Link to="/shop-create">
-                  <h1 className="text-[#fff] flex items-center">
-                    Become Seller <IoIosArrowForward className="ml-1" />
-                  </h1>
-                </Link>
-              </div>
-              <br />
-              <br />
-              <br />
-
-              <div className={`${styles.noramlFlex}`}>
-                <div className="relative cursor-pointer mr-[15px]">
-                  {isAuthenticated ? (
-                    <Link to="/profile">
+                {isAuthenticated && user ? (
+                  <Link to="/profile">
+                    {user.avatar ? (
                       <img
                         src={`${backend_url}${user.avatar}`}
-                        alt=""
-                        className="w-[30px] h-[30px] rounded-full"
+                        alt="profile"
+                        className="w-[35px] h-[35px] rounded-full border border-gray-300"
                       />
-                    </Link>
-                  ) : (
-                    <Link to="/login">
-                      <CgProfile size={30} color="rgb(0 0 0 / 83%)" />
-                    </Link>
-                  )}
-                </div>
+                    ) : (
+                      <span className="text-white">Profile</span>
+                    )}
+                  </Link>
+                ) : (
+                  <Link to="/login">
+                    <CgProfile size={30} color="rgb(255 255 255 / 83%)" />
+                  </Link>
+                )}
               </div>
+            </div>
 
-              <Link to="/sign-up" className="text-[18px] text-[#000000b7] ml-4">
-                Sign up
-              </Link>
+            {/* cart  popup*/}
+            {openCart ? <Cart setOpenCart={setOpenCart} /> : null}
+
+            {/* wishlist  popup*/}
+            {openWishlist ? (
+              <Wishlist setOpenWishlist={setOpenWishlist} />
+            ) : null}
+
+            {/* ✅ Updated Login / Signup section */}
+            <div className="ml-4">
+              {isAuthenticated && user ? (
+                <Link to="/profile">
+                  {user.avatar ? (
+                    <img
+                      src={`${backend_url}${user.avatar}`}
+                      alt="profile"
+                      className="w-[35px] h-[35px] rounded-full border border-gray-300"
+                    />
+                  ) : (
+                    <span className="text-black">Profile</span>
+                  )}
+                </Link>
+              ) : (
+                <Link to="/login" className="text-[18px] text-[#000000b7]">
+                  Login / Signup
+                </Link>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
     </>
   );
