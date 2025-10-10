@@ -1,21 +1,18 @@
-import axios from "../../axios";
+import axios from "axios";
 import { server } from "../../server";
 
-// Load user
 export const loadUser = () => async (dispatch) => {
   try {
-    dispatch({
-      type: "LoadUserRequest",
+    dispatch({ type: "LoadUserRequest" });
+
+    const { data } = await axios.get(`${server}/user/getuser`, {
+      withCredentials: true, // VERY important for sending cookies/session
     });
-
-    console.log("Axios baseURL is:", axios.defaults.baseURL);
-
-    
-    // const { data } = await axios.get("/user/getuser");
+    console.log("LoadUser response:", data);
 
     dispatch({
       type: "LoadUserSuccess",
-      payload: null, 
+      payload: data.user,
     });
   } catch (error) {
     dispatch({
@@ -29,7 +26,6 @@ export const loadUser = () => async (dispatch) => {
 export const updateUserInformation = (userData) => async (dispatch) => {
   try {
     console.log("Updating user info...", userData);
-
   } catch (error) {
     console.error("Update failed", error);
   }
@@ -39,7 +35,6 @@ export const updateUserInformation = (userData) => async (dispatch) => {
 export const updatUserAddress = (addressData) => async (dispatch) => {
   try {
     console.log("Updating user address...", addressData);
-
   } catch (error) {
     console.error("Address update failed", error);
   }

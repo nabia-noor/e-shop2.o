@@ -1,10 +1,11 @@
-import { React, useState } from "react";
+import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import styles from "../../styles/styles";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { server } from "../../server";
 import { toast } from "react-toastify";
+
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -14,23 +15,25 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await axios
-      .post(
+    try {
+      const res = await axios.post(
         `${server}/user/login-user`,
-        {
-          email,
-          password,
-        },
+        { email, password },
         { withCredentials: true }
-      )
-      .then((res) => {
-        toast.success("Login Success!");
-        navigate("/");
-        window.location.reload(true);
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message);
-      });
+      );
+
+      console.log("Login Response:", res.data);
+      toast.success("Login Success!");
+      navigate("/");
+      window.location.reload(true);
+    } catch (err) {
+      console.error("Login Error:", err);
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        "Login failed. Please try again.";
+      toast.error(message);
+    }
   };
 
   return (
@@ -40,6 +43,7 @@ const Login = () => {
           Login to your account
         </h2>
       </div>
+
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
@@ -62,6 +66,7 @@ const Login = () => {
                 />
               </div>
             </div>
+
             <div>
               <label
                 htmlFor="password"
@@ -94,6 +99,7 @@ const Login = () => {
                 )}
               </div>
             </div>
+
             <div className={`${styles.noramlFlex} justify-between`}>
               <div className={`${styles.noramlFlex}`}>
                 <input
@@ -118,6 +124,7 @@ const Login = () => {
                 </a>
               </div>
             </div>
+
             <div>
               <button
                 type="submit"
@@ -126,6 +133,7 @@ const Login = () => {
                 Submit
               </button>
             </div>
+
             <div className={`${styles.noramlFlex} w-full`}>
               <h4>Not have any account?</h4>
               <Link to="/sign-up" className="text-blue-600 pl-2">

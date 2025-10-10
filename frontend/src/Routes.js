@@ -9,6 +9,7 @@ import FAQPage from "../src/pages/FAQPage";
 import ProfilePage from "./pages/ProfilePage";
 import OrderSuccessPage from "../src/pages/OrderSuccessPage";
 import ProductDetailsPage from "../src/pages/ProductDetailsPage";
+
 export {
   LoginPage,
   SignupPage,
