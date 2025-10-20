@@ -22,12 +22,15 @@ import PaymentPage from "./pages/PaymentPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import ProtectedRoute from "./ProtectedRoute.js";
+import { useSelector } from "react-redux";
 
 const stripePromise = loadStripe(
   "pk_test_12345_yahan_apna_publishable_key_lagao"
 );
 
 const App = () => {
+  const { loading, isAuthenticated } = useSelector((state) => state.user);
   useEffect(() => {
     Store.dispatch(loadUser());
   }, []);
@@ -50,7 +53,14 @@ const App = () => {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/order/success/:id" element={<OrderSuccessPage />} />
-        <Route path="/profile" element={<profilePage />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/payment"

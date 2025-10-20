@@ -33,8 +33,6 @@ const ProfileSidebar = ({ setActive, active }) => {
       .catch((error) => {
         if (error.response) {
           console.log(error.response.data.message);
-        } else {
-          console.log("Network Error:", error.message);
         }
       });
   };
@@ -158,7 +156,7 @@ const ProfileSidebar = ({ setActive, active }) => {
       )}
       <div
         className="single_item flex items-center cursor-pointer w-full mb-8"
-        onClick={logoutHandler}
+        onClick={() => setActive(8) || logoutHandler()}
       >
         <AiOutlineLogin size={20} color={active === 8 ? "red" : ""} />
         <span

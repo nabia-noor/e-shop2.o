@@ -295,5 +295,35 @@ router.get("/getuser", isAuthenticated, catchAsyncErrors(function _callee4(req, 
       }
     }
   }, null, null, [[0, 9]]);
+})); // logout user
+
+router.get("/logout", isAuthenticated, catchAsyncErrors(function _callee5(req, res, next) {
+  return regeneratorRuntime.async(function _callee5$(_context5) {
+    while (1) {
+      switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.prev = 0;
+          res.cookie("token", null, {
+            expires: new Date(Date.now()),
+            httpOnly: true
+          });
+          res.status(201).json({
+            success: true,
+            message: "Log out successfull "
+          });
+          _context5.next = 8;
+          break;
+
+        case 5:
+          _context5.prev = 5;
+          _context5.t0 = _context5["catch"](0);
+          return _context5.abrupt("return", next(new ErrorHandler(_context5.t0.message, 500)));
+
+        case 8:
+        case "end":
+          return _context5.stop();
+      }
+    }
+  }, null, null, [[0, 5]]);
 }));
 module.exports = router;
