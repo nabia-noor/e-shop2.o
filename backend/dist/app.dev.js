@@ -14,7 +14,9 @@ var cors = require("cors");
 
 var productRoutes = require("./routes/product");
 
-var userRoutes = require("./controller/user"); // Load environment variables if not production
+var userRoutes = require("./controller/user");
+
+var shopRoutes = require("./controller/shop"); // Load environment variables if not production
 
 
 if (process.env.NODE_ENV !== "PRODUCTION") {
@@ -40,7 +42,8 @@ app.use(bodyParser.urlencoded({
 app.use("/uploads", express["static"]("uploads")); // Routes
 
 app.use("/api/v1/product", productRoutes);
-app.use("/api/v1/user", userRoutes); // Error Handling Middleware
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/shop", shopRoutes); // Error Handling Middleware
 
 app.use(ErrorHandler);
 module.exports = app;

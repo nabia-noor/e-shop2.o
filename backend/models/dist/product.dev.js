@@ -1,6 +1,6 @@
 "use strict";
 
-var mongoose = require('mongoose');
+var mongoose = require("mongoose");
 
 var productSchema = new mongoose.Schema({
   name: {
@@ -25,4 +25,4 @@ var productSchema = new mongoose.Schema({
     "default": Date.now
   }
 });
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.model("Product", productSchema);

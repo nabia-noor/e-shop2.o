@@ -1,9 +1,10 @@
 import axios from "../../axios";
 
+
 /* --------------------------------------------------
    Base URL of your backend
    -------------------------------------------------- */
-export const server = "http://localhost:8000/api/v1";   // ← اپنی مرضی کا رکھیں
+export const server = "http://localhost:8000/api/v1";
 
 /* --------------------------------------------------
    1)  Create Product
@@ -13,20 +14,30 @@ export const createProduct = (productData) => async (dispatch) => {
   try {
     dispatch({ type: "productCreateRequest" });
 
-    // اگر images ہیں تو بہتر ہے FormData استعمال کریں:
+
     const formData = new FormData();
     Object.entries(productData).forEach(([key, value]) => {
       if (key === "images") {
-        value.forEach((img) => formData.append("images", img));
-      } else {
+        // images is now an array of File objects
+        if (Array.isArray(value)) {
+          value.forEach((file) => {
+            if (file instanceof File) {
+              formData.append("images", file);
+            }
+          });
+        }
+      } else if (value !== null && value !== undefined && value !== "") {
         formData.append(key, value);
       }
     });
 
     const { data } = await axios.post(
-      `${server}/product/create`,
+      `${server}/product/create-product`,
       formData,
-      { withCredentials: true }          // اگر cookie token وغیرہ چاہیے
+      {
+        withCredentials: true,
+        // Don't set Content-Type header - browser will set it automatically with boundary for FormData
+      }
     );
 
     dispatch({
@@ -49,7 +60,7 @@ export const getAllProductsShop = (shopId) => async (dispatch) => {
     dispatch({ type: "getAllProductsShopRequest" });
 
     const { data } = await axios.get(
-      `${server}/product/shop/${shopId}`
+      `${server}/product/get-all-products-shop/${shopId}`
     );
 
     dispatch({
@@ -72,7 +83,7 @@ export const deleteProduct = (productId) => async (dispatch) => {
     dispatch({ type: "deleteProductRequest" });
 
     const { data } = await axios.delete(
-      `${server}/product/${productId}`,
+      `${server}/product/delete-shop-product/${productId}`,
       { withCredentials: true }
     );
 
@@ -95,7 +106,7 @@ export const getAllProducts = () => async (dispatch) => {
   try {
     dispatch({ type: "getAllProductsRequest" });
 
-    
+
 
     const { data } = await axios.get(`${server}/product/all`);
 

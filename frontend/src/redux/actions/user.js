@@ -49,3 +49,16 @@ export const deleteUserAddress = (addressId) => async (dispatch) => {
     console.error("Delete address failed", error);
   }
 };
+
+// load seller()
+export const loadSeller = () => async (dispatch) => {
+  try {
+    dispatch({ type: "LoadSellerRequest" });
+    const { data } = await axios.get(`${server}/shop/getSeller`, { withCredentials: true });
+    console.log("LoadSeller response:", data);
+    dispatch({ type: "LoadSellerSuccess", payload: data.seller || data.user });
+  } catch (error) {
+    console.log("LoadSeller error:", error.response?.data?.message || error.message);
+    dispatch({ type: "LoadSellerFail", payload: error.response?.data?.message || error.message });
+  }
+}

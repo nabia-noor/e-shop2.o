@@ -69,6 +69,12 @@ Object.defineProperty(exports, "ProductDetailsPage", {
     return _ProductDetailsPage["default"];
   }
 });
+Object.defineProperty(exports, "ShopCreatePage", {
+  enumerable: true,
+  get: function get() {
+    return _ShopCreate["default"];
+  }
+});
 
 var _Login = _interopRequireDefault(require("../src/pages/Login"));
 
@@ -91,5 +97,7 @@ var _ProfilePage = _interopRequireDefault(require("./pages/ProfilePage"));
 var _OrderSuccessPage = _interopRequireDefault(require("../src/pages/OrderSuccessPage"));
 
 var _ProductDetailsPage = _interopRequireDefault(require("../src/pages/ProductDetailsPage"));
+
+var _ShopCreate = _interopRequireDefault(require("../src/pages/ShopCreate"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }

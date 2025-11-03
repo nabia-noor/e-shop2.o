@@ -2,21 +2,45 @@ import axios from "../../axios";
 import { server } from "../../server";
 
 // create event
-export const createevent = (data) => async (dispatch) => {
+export const createevent = (eventData) => async (dispatch) => {
   try {
     dispatch({
       type: "eventCreateRequest",
     });
 
-    const { d } = await axios.post(`${server}/event/create-event`, data);
+    const formData = new FormData();
+    Object.entries(eventData).forEach(([key, value]) => {
+      if (key === "images") {
+        // images is now an array of File objects
+        if (Array.isArray(value)) {
+          value.forEach((file) => {
+            if (file instanceof File) {
+              formData.append("images", file);
+            }
+          });
+        }
+      } else if (value !== null && value !== undefined && value !== "") {
+        formData.append(key, value);
+      }
+    });
+
+    const { data } = await axios.post(
+      `${server}/event/create-event`,
+      formData,
+      {
+        withCredentials: true,
+        // Don't set Content-Type header - browser will set it automatically with boundary for FormData
+      }
+    );
+
     dispatch({
       type: "eventCreateSuccess",
-      payload: d.event,
+      payload: data.event,
     });
   } catch (error) {
     dispatch({
       type: "eventCreateFail",
-      payload: error.response.data.message,
+      payload: error.response?.data?.message || error.message,
     });
   }
 };

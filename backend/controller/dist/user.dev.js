@@ -21,13 +21,10 @@ var jwt = require("jsonwebtoken");
 
 var sendMail = require("../utils/sendMail");
 
-var _require2 = require("console"),
-    error = _require2.error;
-
 var sendToken = require("../utils/jwtToken");
 
-var _require3 = require("../middleware/auth"),
-    isAuthenticated = _require3.isAuthenticated;
+var _require2 = require("../middleware/auth"),
+    isAuthenticated = _require2.isAuthenticated;
 
 router.post("/create-user", upload.single("file"), function _callee(req, res, next) {
   var _req$body, name, email, password, userEmail, _filename, filePath, filename, fileUrl, user, activationToken, activationUrl;

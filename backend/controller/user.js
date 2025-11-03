@@ -8,8 +8,7 @@ const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const sendMail = require("../utils/sendMail");
-const { error } = require("console");
-const sendToken = require("../utils/jwtToken");
+const { sendToken } = require("../utils/jwtToken");
 const { isAuthenticated } = require("../middleware/auth");
 
 router.post("/create-user", upload.single("file"), async (req, res, next) => {
@@ -150,10 +149,17 @@ router.get(
   isAuthenticated,
   catchAsyncErrors(async (req, res, next) => {
     try {
-      const user = await User.findById(req.user.id);
+      // req.user is already set by isAuthenticated middleware
+      if (!req.user) {
+        return next(new ErrorHandler("User not authenticated", 401));
+      }
+
+      // req.user is already the full user object, but we might need to refresh it
+      // to ensure we have the latest data (especially if password was selected: false)
+      const user = await User.findById(req.user._id);
 
       if (!user) {
-        return next(new ErrorHandler("User doesn't exists", 400));
+        return next(new ErrorHandler("User doesn't exist", 400));
       }
 
       res.status(200).json({
@@ -161,7 +167,8 @@ router.get(
         user,
       });
     } catch (error) {
-      return next(new ErrorHandler(error.message, 500));
+      console.error("Error in getuser:", error);
+      return next(new ErrorHandler(error.message || "Failed to get user", 500));
     }
   })
 );

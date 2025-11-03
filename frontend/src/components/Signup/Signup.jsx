@@ -38,7 +38,7 @@ const Signup = () => {
         setName("");
         setEmail("");
         setPassword("");
-        setAvatar(null);
+        setAvatar();
       })
       .catch((error) => {
         toast.error(error.response.data.message);

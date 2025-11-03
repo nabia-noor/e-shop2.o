@@ -2,35 +2,45 @@ const nodemailer = require("nodemailer");
 
 const sendMail = async (options) => {
   try {
-    // Log SMTP configuration (excluding password)
-    console.log("SMTP Configuration:", {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      service: process.env.SMTP_SERVICE,
-      auth: {
-        user: process.env.SMTP_MAIL,
-        // password hidden for security
-      },
-    });
+    const env = process.env.NODE_ENV || "development";
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      service: process.env.SMTP_SERVICE,
-      auth: {
-        user: process.env.SMTP_MAIL,
-        pass: process.env.SMTP_PASSWORD,
-      },
-      // SSL/TLS configuration
-      secure: true, // use TLS
-      tls: {
-        // do not fail on invalid certs
-        rejectUnauthorized: false,
-      },
-      // Enable debug logging
-      debug: true,
-      logger: true,
-    });
+    // Allow either a well-known service OR host/port
+    const hasService = !!process.env.SMTP_SERVICE;
+    const hasHostPort = !!process.env.SMTP_HOST && !!process.env.SMTP_PORT;
+
+    if (!hasService && !hasHostPort) {
+      throw new Error(
+        "SMTP configuration invalid. Provide SMTP_SERVICE or SMTP_HOST and SMTP_PORT"
+      );
+    }
+
+    if (!process.env.SMTP_MAIL || !process.env.SMTP_PASSWORD) {
+      throw new Error(
+        "Missing SMTP_MAIL or SMTP_PASSWORD. Check your backend/config/.env"
+      );
+    }
+
+    const smtpPort = Number(process.env.SMTP_PORT || 0);
+    const secure = smtpPort === 465 || process.env.SMTP_SECURE === "true";
+
+    const transportConfig = hasService
+      ? {
+        service: process.env.SMTP_SERVICE,
+        auth: { user: process.env.SMTP_MAIL, pass: process.env.SMTP_PASSWORD },
+      }
+      : {
+        host: process.env.SMTP_HOST,
+        port: smtpPort,
+        secure,
+        auth: { user: process.env.SMTP_MAIL, pass: process.env.SMTP_PASSWORD },
+      };
+
+    // Be tolerant in development environments
+    if (env !== "production") {
+      transportConfig.tls = { rejectUnauthorized: false };
+    }
+
+    const transporter = nodemailer.createTransport(transportConfig);
 
     const mailOptions = {
       from: process.env.SMTP_MAIL,
@@ -39,12 +49,12 @@ const sendMail = async (options) => {
       text: options.message,
     };
 
-    // Verify SMTP connection configuration
-    await transporter.verify();
-    console.log("SMTP connection verified successfully");
+    // Only verify in production to avoid local blocking
+    if (env === "production") {
+      await transporter.verify();
+    }
 
     const result = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully:", result.response);
     return result;
   } catch (error) {
     console.error("Email sending failed:", {
@@ -53,7 +63,7 @@ const sendMail = async (options) => {
       command: error.command,
       stack: error.stack,
     });
-    throw error; // Re-throw to handle it in the calling function
+    throw error;
   }
 };
 
