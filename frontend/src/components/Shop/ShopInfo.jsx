@@ -1,72 +1,106 @@
-import react from 'react';
-import { useSelector } from 'react-redux';
-import { backend_url, server } from '../../server';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { server } from "../../server";
+import styles from "../../styles/styles";
+import Loader from "../Layout/Loader";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllProductsShop } from "../../redux/actions/product";
 
 const ShopInfo = ({ isOwner }) => {
-    const { seller } = useSelector((state) => state.seller);
-    const navigate = useNavigate();
+    const [data, setData] = useState({});
+    const { products } = useSelector((state) => state.product);
+    const [isLoading, setIsLoading] = useState(false);
+    const { id } = useParams();
+    const dispatch = useDispatch();
 
-    const handleEdit = () => {
-        navigate('/dashboard/settings');
+    useEffect(() => {
+        dispatch(getAllProductsShop(id));
+        setIsLoading(true);
+        axios.get(`${server}/shop/get-shop-info/${id}`).then((res) => {
+            setData(res.data.shop);
+            setIsLoading(false);
+        }).catch((error) => {
+            console.log(error);
+            setIsLoading(false);
+        })
+    }, [])
+
+
+    const logoutHandler = async () => {
+        axios.get(`${server}/shop/logout`, {
+            withCredentials: true,
+        });
+        window.location.reload();
     };
 
-    const handleLogout = async () => {
-        try {
-            await axios.get(`${server}/shop/logout`, { withCredentials: true });
-            toast.success('Logged out');
-            navigate('/shop-login');
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Logout failed');
-        }
-    };
+    const totalReviewsLength =
+        products &&
+        products.reduce((acc, product) => acc + product.reviews.length, 0);
+
+    const totalRatings = products && products.reduce((acc, product) => acc + product.reviews.reduce((sum, review) => sum + review.rating, 0), 0);
+
+    const averageRating = totalRatings / totalReviewsLength || 0;
+
     return (
-        <div className='w-full py-5'>
-            <div className='w-full flex items-center justify-center'>
-                <img
-                    src={`${backend_url}${seller?.avatar?.url || seller?.avatar || ''}`}
-                    alt=''
-                    className='w-[150px] h-[150px] object-cover rounded-full'
-                />
-            </div>
-            <div className='w-full text-center mt-4'>
-                <h3 className='text-[18px] font-[600] text-[#333]'>{seller?.name || 'Shop Name'}</h3>
-                <p className='text-[14px] text-[#777] mt-1'>{seller?.email || ''}</p>
-                {seller?.createdAt && (
-                    <p className='text-[13px] text-[#888] mt-1'>Joined: {new Date(seller.createdAt).toLocaleDateString()}</p>
-                )}
-            </div>
-
-            {/* Details like in the video: Address, Phone, Total Products, Ratings */}
-            <div className='w-full mt-6 px-5 space-y-4 text-left'>
-                <div>
-                    <h5 className='text-[13px] font-[600] text-[#666]'>Address</h5>
-                    <p className='text-[14px] text-[#333] mt-1 break-words'>{seller?.address || '—'}</p>
-                </div>
-                <div>
-                    <h5 className='text-[13px] font-[600] text-[#666]'>Phone Number</h5>
-                    <p className='text-[14px] text-[#333] mt-1'>03087543</p>
-                </div>
-                <div>
-                    <h5 className='text-[13px] font-[600] text-[#666]'>Total Products</h5>
-                    <p className='text-[14px] text-[#333] mt-1'>10</p>
-                </div>
-                <div>
-                    <h5 className='text-[13px] font-[600] text-[#666]'>Shop Ratings</h5>
-                    <p className='text-[14px] text-[#333] mt-1'>4/5</p>
-                </div>
-            </div>
-
-            {isOwner && (
-                <div className='w-full mt-6 px-4 space-y-3'>
-                    <button onClick={handleEdit} className='w-full h-[40px] bg-[#111827] text-white rounded-[4px] hover:opacity-90'>Edit Shop</button>
-                    <button onClick={handleLogout} className='w-full h-[40px] bg-[#ef4444] text-white rounded-[4px] hover:bg-[#dc2626]'>Log Out</button>
-                </div>
-            )}
-        </div>
-    )
-}
+        <>
+            {
+                isLoading ? (
+                    <Loader />
+                ) : (
+                    <div>
+                        <div className="w-full py-5">
+                            <div className="w-full flex item-center justify-center">
+                                <img
+                                    src={`${data.avatar?.url}`}
+                                    alt=""
+                                    className="w-[150px] h-[150px] object-cover rounded-full"
+                                />
+                            </div>
+                            <h3 className="text-center py-2 text-[20px]">{data.name}</h3>
+                            <p className="text-[16px] text-[#000000a6] p-[10px] flex items-center">
+                                {data.description}
+                            </p>
+                        </div>
+                        <div className="p-3">
+                            <h5 className="font-[600]">Address</h5>
+                            <h4 className="text-[#000000a6]">{data.address}</h4>
+                        </div>
+                        <div className="p-3">
+                            <h5 className="font-[600]">Phone Number</h5>
+                            <h4 className="text-[#000000a6]">{data.phoneNumber}</h4>
+                        </div>
+                        <div className="p-3">
+                            <h5 className="font-[600]">Total Products</h5>
+                            <h4 className="text-[#000000a6]">{products && products.length}</h4>
+                        </div>
+                        <div className="p-3">
+                            <h5 className="font-[600]">Shop Ratings</h5>
+                            <h4 className="text-[#000000b0]">{averageRating}/5</h4>
+                        </div>
+                        <div className="p-3">
+                            <h5 className="font-[600]">Joined On</h5>
+                            <h4 className="text-[#000000b0]">{data?.createdAt?.slice(0, 10)}</h4>
+                        </div>
+                        {isOwner && (
+                            <div className="py-3 px-4">
+                                <Link to="/settings">
+                                    <div className={`${styles.button} !w-full !h-[42px] !rounded-[5px]`}>
+                                        <span className="text-white">Edit Shop</span>
+                                    </div>
+                                </Link>
+                                <div className={`${styles.button} !w-full !h-[42px] !rounded-[5px]`}
+                                    onClick={logoutHandler}
+                                >
+                                    <span className="text-white">Log Out</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )
+            }
+        </>
+    );
+};
 
 export default ShopInfo;

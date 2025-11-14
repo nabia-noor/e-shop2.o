@@ -11,8 +11,9 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "../../redux/actions/wishlist";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { backend_url } from "../../server";
 
 const ProductDetails = ({ data }) => {
   const [count, setCount] = useState(1);
@@ -58,24 +59,22 @@ const ProductDetails = ({ data }) => {
                 />
                 <div className="w-full flex">
                   <div
-                    className={`${
-                      select === 0 ? "border" : "null"
-                    } cursor-pointer`}
+                    className={`${select === 0 ? "border" : "null"
+                      } cursor-pointer`}
                   >
                     <img
-                      src={data?.image_Url[0].url}
+                      src={`${backend_url}${data.images && data.images[0]}`}
                       alt=""
                       className="h-[200px]"
                       onClick={() => setSelect(0)}
                     />
                   </div>
                   <div
-                    className={`${
-                      select === 1 ? "border" : "null"
-                    } cursor-pointer`}
+                    className={`${select === 1 ? "border" : "null"
+                      } cursor-pointer`}
                   >
                     <img
-                      src={data?.image_Url[1].url}
+                      src={`${backend_url}${data.images && data.images[0]}`}
                       alt=""
                       className="h-[200px]"
                       onClick={() => setSelect(1)}
@@ -88,10 +87,10 @@ const ProductDetails = ({ data }) => {
                 <p>{data.description}</p>
                 <div className="flex pt-3">
                   <h4 className={`${styles.productDiscountPrice}`}>
-                    {data.discount_price}$
+                    {data.discountprice}$
                   </h4>
                   <h3 className={`${styles.price}`}>
-                    {data.price ? data.price + "$" : null}
+                    {data.originalPrice ? data.originalPrice + "$" : null}
                   </h3>
                 </div>
                 <div className="flex items-center mt-12 justify-between pr-3">
@@ -140,7 +139,7 @@ const ProductDetails = ({ data }) => {
                 </div>
                 <div className="flex items-center pt-8">
                   <img
-                    src={data.shop.shop_avatar.url}
+                    src={`${backend_url}$}{data?.shop?.avatar}`}
                     alt=""
                     className="w-[50px] h-[50px] rounded-full mr-2"
                   />
@@ -149,7 +148,7 @@ const ProductDetails = ({ data }) => {
                       {data.shop.name}
                     </h3>
                     <h5 className="pb-3 text-[15px]">
-                      ({data.shop.ratings}) Ratings
+                      (4/5) Ratings
                     </h5>
                   </div>
                   <div
@@ -175,6 +174,13 @@ const ProductDetails = ({ data }) => {
 
 const ProductDetailsInfo = ({ data }) => {
   const [active, setActive] = useState(1);
+  const { allProducts = [] } = useSelector((state) => state.product || {});
+
+  // Filter products by shop ID
+  const shopProducts = allProducts.filter(
+    (product) => product.shopId === data?.shop?._id
+  );
+
   return (
     <div className="bg-[#f5f6fb] px-3 800px:px-10 py-2 rounded">
       <div className="w-full flex justify-between border-b pt-10 pb-2">
@@ -221,70 +227,52 @@ const ProductDetailsInfo = ({ data }) => {
       {active === 1 ? (
         <>
           <p className="py-2 text-[18px] leading-8 pb-10 whitespace-pre-line">
-            Products detail are a cruicial part of any eCommerce website or
-            online marketplace.These details help the potential customer to make
-            an informed descision about the product they are interseted in
-            buying A well written product description can also be a powerful
-            marketing tool that can help to increse sale. product details
-            typically include information about the product
-            feature,specification dimension weight materials and other relevant
-            information can help language and be honest and transparent about
-            the products feature and liitation.
-          </p>
-          <p className="py-2 text-[18px] leading-8 pb-10 whitespace-pre-line">
-            customer to understand the product better the product detail sec
-            should be also include high quality img and videos of the product as
-            well as customer Reviews it is essential to keep the target audience
-            in the mind. the lang use should be clear and easy to uderstand the
-            tone of product detail should be persuaive highlight the unique
-            feature
-          </p>
-          <p className="py-2 text-[18px] leading-8 pb-10 whitespace-pre-line">
-            customer to understand the product better the product detail sec
-            should be also include high quality img and videos of the product as
-            well as customer Reviews it is essential to keep the target audience
-            in the mind. the lang use should be clear and easy to uderstand the
-            tone of product detail should be persuaive highlight the unique
-            feature
+            {data.description}
           </p>
         </>
       ) : null}
 
       {active === 2 ? (
         <div className="w-full justify-center min-h-[40vh] flex items-center">
-          <p>No Reviews yet!</p>
+          {
+            data && data.reviews.map((item, index) => (
+              <div className="w-full flex my-2">
+                <img src={`${backend_url}/${item.user.avatar}`} alt="" className="w-[60px] h-[60px rounded-full]" />
+                <div>
+                  <h1>{item.user.name}</h1>
+                  <p>{item.ratings}</p>
+                </div>
+              </div>
+            ))
+          }
+
+          <div className="w-full justify-center">
+            {
+              data && data.reviews.length === 0 && (
+                <h5>no reviews have for this product</h5>
+              )
+            }
+          </div>
         </div>
       ) : null}
 
       {active === 3 && (
         <div className="w-full block 800px:flex p-5">
           <div className="w-full 800px:w-[50%]">
-            <div className="flex items-center">
-              <img
-                src={data.shop.shop_avatar.url}
-                className="w-[50px] h-[50px] rounded-full"
-                alt=""
-              />
-              <div className="pl-3">
-                <h3 className={`${styles.shop_name}`}>{data.shop.name}</h3>
-                <h5 className="pb-2 text-[15px]">
-                  ({data.shop.ratings}) Ratings
-                </h5>
-              </div>
-            </div>
+            <Link to={`/shop/preview/${data.shop._id}`}>
+              <div className="flex items-center"></div>
+            </Link>
             <p className="pt-2">
-              Lorem ipsum dolor sit amet, consectetr adipiscing elit. Quidem cum
-              quibusm omnis a minima persuaive itaque magnum nescinut poro saepe
-              isuto saepa esse accusma eligendi
+              {data.shop.description}
             </p>
           </div>
           <div className="w-full 800px:w-[50%] mt-5 800px:mt-0 800px:flex flex-col items-end">
             <div className="text-left">
               <h5 className="font-[600]">
-                Joined on: <span className="font-[500]">14 March,2023</span>
+                Joined on: <span className="font-[500]">{data.shop?.createAt?.slice(0, 10)}</span>
               </h5>
               <h5 className="font-[600] pt-3">
-                Total products: <span className="font-[500]">1,223</span>
+                Total products: <span className="font-[500]">{shopProducts.length || 0}</span>
               </h5>
               <h5 className="font-[600]">
                 Total Reviews: <span className="font-[500]">324</span>

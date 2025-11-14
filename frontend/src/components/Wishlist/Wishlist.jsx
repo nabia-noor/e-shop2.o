@@ -1,29 +1,26 @@
-import React, { useState } from "react";
+import React from "react";
 import { RxCross1 } from "react-icons/rx";
-import { IoBagHandleOutline } from "react-icons/io5";
 import { BsCartPlus } from "react-icons/bs";
 import styles from "../../styles/styles";
-import { Link } from "react-router-dom";
 import { AiOutlineHeart } from "react-icons/ai";
+import { useSelector, useDispatch } from "react-redux";
+import { removeFromWishlist } from "../../redux/actions/wishlist";
+import { addTocart } from "../../redux/actions/cart";
+import { toast } from "react-toastify";
 
 const Wishlist = ({ setOpenWishlist }) => {
-  const CartData = [
-    {
-      name: "Iphone 14 pro max 256 gb ssd and 8gb ram silver colour",
-      description: "test",
-      price: 999,
-    },
-    {
-      name: "Iphone 14 pro max 256 gb ssd and 8gb ram silver colour",
-      description: "test",
-      price: 245,
-    },
-    {
-      name: "Iphone 14 pro max 256 gb ssd and 8gb ram silver colour",
-      description: "test",
-      price: 645,
-    },
-  ];
+  const dispatch = useDispatch();
+  const { wishlist } = useSelector((state) => state.wishlist);
+
+  const removeFromWishlistHandler = (data) => {
+    dispatch(removeFromWishlist(data));
+  }
+
+  const addToCartHandler = (data) => {
+    const newData = { ...data, qty: 1 };
+    dispatch(addTocart(newData));
+    setOpenWishlist(false);
+  }
 
   return (
     <div className="fixed top-0 left-0 w-full bg-[#0000004b] h-screen z-10">
@@ -39,14 +36,32 @@ const Wishlist = ({ setOpenWishlist }) => {
           {/* Item length */}
           <div className={`${styles.noramlFlex} p-4`}>
             <AiOutlineHeart size={25} />
-            <h5 className="pl-2 text-[20px] font-[500]">3 items</h5>
+            <h5 className="pl-2 text-[20px] font-[500]">
+              {wishlist && wishlist.length} {wishlist && wishlist.length === 1 ? "item" : "items"}
+            </h5>
+
           </div>
 
           {/* cart Single Items */}
           <b />
           <div className="w-full border-t">
-            {CartData &&
-              CartData.map((i, index) => <CartSingle key={index} data={i} />)}
+            {wishlist && wishlist.length > 0 ? (
+              wishlist.map((i, index) => (
+                <CartSingle
+                  key={index}
+                  data={i}
+                  removeFromWishlistHandler={() => dispatch(removeFromWishlist(i))}
+                  addToCartHandler={() => {
+                    dispatch(addTocart(i));
+                    toast.success("Item added to cart!");
+                  }}
+                />
+              ))
+            ) : (
+              <div className="w-full flex items-center justify-center py-8">
+                <h5 className="text-[#00000082]">Your wishlist is empty!</h5>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -54,28 +69,37 @@ const Wishlist = ({ setOpenWishlist }) => {
   );
 };
 
-const CartSingle = ({ data }) => {
-  const [value, setValue] = useState(1);
-  const totalPrice = data.price * value;
+const CartSingle = ({ data, removeFromWishlistHandler, addToCartHandler }) => {
+  const imageUrl = data.image_Url?.[0]?.url || data.images?.[0]?.url || "https://tse4.mm.bing.net/th/id/OIP.cF269Ylne2B3O6Gj3nG_FwHaI8?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3";
+  const price = data.discountPrice || data.discount_price || data.price || 0;
 
   return (
     <div className="border-b p-4">
       <div className="w-full flex items-center">
-        <RxCross1 className="cursor-pointer" />
+        <RxCross1
+          className="cursor-pointer"
+          onClick={removeFromWishlistHandler}
+          title="Remove from wishlist"
+        />
         <img
-          src="https://tse4.mm.bing.net/th/id/OIP.cF269Ylne2B3O6Gj3nG_FwHaI8?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
-          alt=""
-          className="w-[80px] h-[80px] ml-2"
+          src={imageUrl}
+          alt={data.name}
+          className="w-[80px] h-[80px] ml-2 rounded-[5px] object-contain"
         />
 
-        <div className="pl-[5px]">
-          <h1>{data.name}</h1>
+        <div className="pl-[5px] flex-1">
+          <h1 className="text-[14px]">{data.name}</h1>
           <h4 className="font-[600] text-[17px] pt-[3px] text-[#d02222] font-Roboto">
-            US${totalPrice}
+            US${price.toFixed(2)}
           </h4>
         </div>
         <div>
-          <BsCartPlus size={20} className="cursor-pointer" tile="Add to cart" />
+          <BsCartPlus
+            size={20}
+            className="cursor-pointer"
+            onClick={() => addToCartHandler(data)}
+            title="Add to cart"
+          />
         </div>
       </div>
     </div>

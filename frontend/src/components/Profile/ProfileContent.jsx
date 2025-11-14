@@ -27,10 +27,7 @@ const ProfileContent = ({ active }) => {
   const { user, error, successMessage } = useSelector((state) => state.user);
   const [name, setName] = useState(user && user.name);
   const [email, setEmail] = useState(user && user.email);
-  const [zipCode, setZipCode] = useState(user && user.zipCode);
   const [phoneNumber, setPhoneNumber] = useState(user && user.phoneNumber);
-  const [address1, setAddress1] = useState(user?.address1 || "");
-  const [address2, setAddress2] = useState(user?.address2 || "");
   const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState(null);
   const dispatch = useDispatch();
@@ -73,18 +70,24 @@ const ProfileContent = ({ active }) => {
     reader.readAsDataURL(e.target.files[0]);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(
+    if (!password) {
+      toast.error("Please enter your password to update information");
+      return;
+    }
+    await dispatch(
       updateUserInformation(
         name,
         email,
         phoneNumber,
-        zipCode,
-        address1,
-        address2
+        password
       )
     );
+    // Reload user data to get updated information
+    dispatch(loadUser());
+    // Clear password field
+    setPassword("");
   };
 
   return (
@@ -150,43 +153,20 @@ const ProfileContent = ({ active }) => {
                     onChange={(e) => setPhoneNumber(e.target.value)}
                   />
                 </div>
-
-                <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Zip Code</label>
-                  <input
-                    type="number"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-                    required
-                    value={zipCode}
-                    onChange={(e) => setZipCode(e.target.value)}
-                  />
-                </div>
               </div>
 
-              {/* Address 1 & Address 2 */}
               <div className="w-full 800px:flex block pb-3">
                 <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Address 1</label>
+                  <label className="block pb-2">Enter your password</label>
                   <input
-                    type="text"
+                    type="password"
                     className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
                     required
-                    value={address1}
-                    onChange={(e) => setAddress1(e.target.value)}
-                  />
-                </div>
-
-                <div className=" w-[100%] 800px:w-[50%]">
-                  <label className="block pb-2">Address 2</label>
-                  <input
-                    type="text"
-                    className={`${styles.input} !w-[95%] mb-4 800px:mb-0`}
-                    value={address2}
-                    onChange={(e) => setAddress2(e.target.value)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
               </div>
-
               <input
                 className={`w-[250px] h-[40px] border border-[#3a24db] text-center text-[#3a24db] rounded-[3px] mt-8 cursor-pointer`}
                 required
@@ -219,10 +199,10 @@ const ProfileContent = ({ active }) => {
         </div>
       )}
 
-      {/* Payment Method */}
+      {/* Change Password */}
       {active === 6 && (
         <div>
-          <PaymentMethod />
+          <ChangePassword />
         </div>
       )}
 
@@ -467,64 +447,334 @@ const TrackOrder = () => {
   );
 };
 
-const PaymentMethod = () => {
+const ChangePassword = () => {
+
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const passwordChangeHandler = async (e) => {
+    e.preventDefault();
+
+    await axios
+      .put(
+        `${server}/user/update-user-password`,
+        { oldPassword, newPassword, confirmPassword },
+        { withCredentials: true }
+      )
+      .then((res) => {
+        toast.success(res.data.success);
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      })
+      .catch((error) => {
+        toast.error(error.response.data.message);
+      });
+  };
   return (
     <div className="w-full px-5">
-      <div className="flex w-full items-center justify-between">
-        <h1 className="text-[25px] font-[600] text-[#000000ba] pb-2">
-          Payment Methods
-        </h1>
-        <div className={`${styles.button} !rounded-md`}>
-          <span className="text-[#fff]">Add New</span>
-        </div>
+      <h1 className="block text-[25px] text-center font-[600] text-[#000000ba] pb-2">
+        Change Password
+      </h1>
+      <div className="w-full">
+        <form aria-required onSubmit={passwordChangeHandler}></form>
       </div>
-      <br />
-      <div className="w-full bg-white h-[70px] rounded-[4px] flex items-center px-3 shadow justify-between pr-10">
-        <div className="flex items-center">
-          <img
-            src="https://images.icon-icons.com/1259/PNG/96/1495815261-jd08_84586.png"
-            alt=""
-          />
-          <h5 className="pl-5 font-[600]">Shariar Sajeeb</h5>
-        </div>
-        <div className="pl-8 flex items-center">
-          <h6>1234 **** *** ****</h6>
-          <h5 className="pl-6">08/2022</h5>
-        </div>
-        <div className="min-w-[10%] flex items-center justify-between pl-8">
-          <AiOutlineDelete size={25} className="cursor-pointer" />
-        </div>
-      </div>
+
     </div>
   );
 };
 
 const Address = () => {
+  const { user } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
+  const [address1, setAddress1] = useState("");
+  const [address2, setAddress2] = useState("");
+  const [zipCode, setZipCode] = useState(null);
+  const [addressType, setAddressType] = useState("");
+
+  const addressTypeData = [
+    {
+      name: "Default",
+    },
+    {
+      name: "Home",
+    },
+    {
+      name: "Office",
+    },
+  ]
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!country || !city || !address1 || !address2 || !zipCode || !addressType) {
+      toast.error("Please fill all the fields!");
+      return;
+    }
+
+    // Validate zipCode is a valid number
+    const zipCodeNum = Number(zipCode);
+    if (isNaN(zipCodeNum) || zipCodeNum <= 0) {
+      toast.error("Please enter a valid zip code!");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast.error("Please login to add address");
+        return;
+      }
+
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      };
+
+      const { data } = await axios.post(
+        `${server}/user/add-address`,
+        {
+          country,
+          city,
+          address1,
+          address2,
+          zipCode: zipCodeNum,
+          addressType,
+        },
+        config
+      );
+
+      toast.success(data?.message || "Address added successfully!");
+      dispatch(loadUser());
+      setOpen(false);
+      setCountry("");
+      setCity("");
+      setAddress1("");
+      setAddress2("");
+      setZipCode(null);
+      setAddressType("");
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to add address";
+      toast.error(errorMessage);
+      console.error("Add address error:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast.error("Please login to delete address");
+        return;
+      }
+
+      if (!id) {
+        toast.error("Address ID is missing");
+        return;
+      }
+
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      };
+
+      const { data } = await axios.delete(
+        `${server}/user/delete-user-address/${id}`,
+        config
+      );
+
+      toast.success(data?.message || "Address deleted successfully!");
+      dispatch(loadUser());
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to delete address";
+      toast.error(errorMessage);
+      console.error("Delete address error:", error);
+    }
+  };
+
   return (
     <div className="w-full px-5">
       <div className="flex w-full items-center justify-between">
         <h1 className="text-[25px] font-[600] text-[#000000ba] pb-2">
           My Addresses
         </h1>
-        <div className={`${styles.button} !rounded-md`}>
+        <div
+          className={`${styles.button} !rounded-md cursor-pointer`}
+          onClick={() => setOpen(!open)}
+        >
           <span className="text-[#fff]">Add New</span>
         </div>
       </div>
       <br />
-      <div className="w-full bg-white h-[70px] rounded-[4px] flex items-center px-3 shadow justify-between pr-10">
-        <div className="flex items-center">
-          <h5 className="pl-5 font-[600]">Default</h5>
+
+      {/* Add Address Form */}
+      {open && (
+        <div className="w-full bg-white rounded-md p-5 mb-4 shadow">
+          <form onSubmit={handleSubmit}>
+            <div className="w-full flex pb-3 gap-3">
+              <div className="w-[50%]">
+                <label className="block pb-2 text-[14px] font-[400]">Country</label>
+                <select
+                  className="w-full border h-[40px] rounded-[5px] px-3"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  required
+                >
+                  <option value="">Choose your country</option>
+                  {Country &&
+                    Country.getAllCountries().map((item) => (
+                      <option key={item.isoCode} value={item.isoCode}>
+                        {item.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="w-[50%]">
+                <label className="block pb-2 text-[14px] font-[400]">City</label>
+                <select
+                  className="w-full border h-[40px] rounded-[5px] px-3"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  disabled={!country}
+                  required
+                >
+                  <option value="">Choose your City</option>
+                  {State && country &&
+                    State.getStatesOfCountry(country).map((item) => (
+                      <option key={item.isoCode} value={item.isoCode}>
+                        {item.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="w-full flex pb-3 gap-3">
+              <div className="w-[50%]">
+                <label className="block pb-2 text-[14px] font-[400]">Address1</label>
+                <input
+                  type="text"
+                  className={`${styles.input} !w-full h-[40px] px-3`}
+                  required
+                  value={address1}
+                  onChange={(e) => setAddress1(e.target.value)}
+                />
+              </div>
+              <div className="w-[50%]">
+                <label className="block pb-2 text-[14px] font-[400]">Address2</label>
+                <input
+                  type="text"
+                  className={`${styles.input} !w-full h-[40px] px-3`}
+                  required
+                  value={address2}
+                  onChange={(e) => setAddress2(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="w-full flex pb-3 gap-3">
+              <div className="w-[50%]">
+                <label className="block pb-2 text-[14px] font-[400]">Zip Code</label>
+                <input
+                  type="number"
+                  className={`${styles.input} !w-full h-[40px] px-3`}
+                  required
+                  value={zipCode || ""}
+                  onChange={(e) => setZipCode(e.target.value ? Number(e.target.value) : null)}
+                />
+              </div>
+              <div className="w-[50%]">
+                <label className="block pb-2 text-[14px] font-[400]">Address Type</label>
+                <select
+                  className="w-full border h-[40px] rounded-[5px] px-3"
+                  value={addressType}
+                  onChange={(e) => setAddressType(e.target.value)}
+                  required
+                >
+                  <option value="">Choose Address Type</option>
+                  <option value="Default">Default</option>
+                  <option value="Home">Home</option>
+                  <option value="Office">Office</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="w-full flex gap-3">
+              <button
+                type="submit"
+                className={`${styles.button} !rounded-md`}
+              >
+                <span className="text-[#fff]">Add</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setCountry("");
+                  setCity("");
+                  setAddress1("");
+                  setAddress2("");
+                  setZipCode(null);
+                  setAddressType("");
+                }}
+                className="w-full border border-[#3a24db] text-[#3a24db] h-[40px] rounded-[5px] cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
-        <div className="pl-8 flex items-center">
-          <h6>494 Erdman Passage, New Zoietown, Paraguay</h6>
+      )}
+
+      {/* Display Addresses */}
+      {user && user.addresses && user.addresses.length > 0 ? (
+        user.addresses.map((item, index) => (
+          <div
+            key={index}
+            className="w-full bg-white h-[70px] rounded-[4px] flex items-center px-3 shadow justify-between pr-10 mb-3"
+          >
+            <div className="flex items-center">
+              <h5 className="pl-5 font-[600]">{item.addressType}</h5>
+            </div>
+            <div className="pl-8 flex items-center">
+              <h6>
+                {item.address1}, {item.address2}, {item.city}, {item.country}
+              </h6>
+            </div>
+            <div className="pl-8 flex items-center">
+              <h6>{item.zipCode}</h6>
+            </div>
+            <div className="min-w-[10%] flex items-center justify-between pl-8">
+              <AiOutlineDelete
+                size={25}
+                className="cursor-pointer text-red-500 hover:text-red-700"
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to delete this address?")) {
+                    handleDelete(item._id);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="w-full bg-white h-[70px] rounded-[4px] flex items-center px-3 shadow justify-center">
+          <h5 className="text-[#000000ba]">No saved addresses</h5>
         </div>
-        <div className="pl-8 flex items-center">
-          <h6>(213) 840-9416</h6>
-        </div>
-        <div className="min-w-[10%] flex items-center justify-between pl-8">
-          <AiOutlineDelete size={25} className="cursor-pointer" />
-        </div>
-      </div>
+      )}
     </div>
   );
 };

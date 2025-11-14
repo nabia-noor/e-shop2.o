@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import styles from "../../styles/styles";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useDispatch } from "react-redux";
+import axiosInstance from "../../axios";
 import { server } from "../../server";
 import { toast } from "react-toastify";
+import { loadUser } from "../../redux/actions/user";
 
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
@@ -16,16 +19,37 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post(
-        `${server}/user/login-user`,
-        { email, password },
-        { withCredentials: true }
+      const res = await axiosInstance.post(
+        "/user/login-user",
+        { email, password }
       );
 
       console.log("Login Response:", res.data);
+
+      // Store token in localStorage for cross-origin requests
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        console.log("Token stored in localStorage");
+      }
+
       toast.success("Login Success!");
-      navigate("/");
-      window.location.reload(true);
+
+      // Dispatch loadUser to update Redux state
+      await dispatch(loadUser());
+
+      // Wait a bit more for Redux state to update
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Check if there's a redirect destination stored
+      const redirectPath = localStorage.getItem("redirectAfterLogin");
+      if (redirectPath) {
+        localStorage.removeItem("redirectAfterLogin");
+        // Navigate to the intended destination
+        navigate(redirectPath, { replace: true });
+      } else {
+        // Navigate to home
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       console.error("Login Error:", err);
       const message =

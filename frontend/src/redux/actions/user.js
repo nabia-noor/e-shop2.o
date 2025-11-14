@@ -1,20 +1,37 @@
 import axios from "axios";
 import { server } from "../../server";
 
+// load user
 export const loadUser = () => async (dispatch) => {
   try {
-    dispatch({ type: "LoadUserRequest" });
+    dispatch({
+      type: "LoadUserRequest",
+    });
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      dispatch({
+        type: "LoadUserFail",
+        payload: "No token found",
+      });
+      return;
+    }
 
     const { data } = await axios.get(`${server}/user/getuser`, {
-      withCredentials: true, // VERY important for sending cookies/session
+      withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-    console.log("LoadUser response:", data);
-
     dispatch({
       type: "LoadUserSuccess",
-      payload: data.user,
+      payload: data?.user || data,
     });
   } catch (error) {
+    // If 401, clear the token
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+    }
     dispatch({
       type: "LoadUserFail",
       payload: error.response?.data?.message || error.message,
@@ -22,43 +39,157 @@ export const loadUser = () => async (dispatch) => {
   }
 };
 
-// Update user information
-export const updateUserInformation = (userData) => async (dispatch) => {
-  try {
-    console.log("Updating user info...", userData);
-  } catch (error) {
-    console.error("Update failed", error);
-  }
-};
-
-// Update user address
-export const updatUserAddress = (addressData) => async (dispatch) => {
-  try {
-    console.log("Updating user address...", addressData);
-  } catch (error) {
-    console.error("Address update failed", error);
-  }
-};
-
-// Delete user address
-export const deleteUserAddress = (addressId) => async (dispatch) => {
-  try {
-    console.log("Deleting user address...", addressId);
-    // Example: await axios.delete(`${server}/user/address/${addressId}`);
-  } catch (error) {
-    console.error("Delete address failed", error);
-  }
-};
-
-// load seller()
+// load seller
 export const loadSeller = () => async (dispatch) => {
   try {
-    dispatch({ type: "LoadSellerRequest" });
-    const { data } = await axios.get(`${server}/shop/getSeller`, { withCredentials: true });
-    console.log("LoadSeller response:", data);
-    dispatch({ type: "LoadSellerSuccess", payload: data.seller || data.user });
+    dispatch({
+      type: "LoadSellerRequest",
+    });
+    const { data } = await axios.get(`${server}/shop/getSeller`, {
+      withCredentials: true,
+    });
+    dispatch({
+      type: "LoadSellerSuccess",
+      payload: data.seller,
+    });
   } catch (error) {
-    console.log("LoadSeller error:", error.response?.data?.message || error.message);
-    dispatch({ type: "LoadSellerFail", payload: error.response?.data?.message || error.message });
+    dispatch({
+      type: "LoadSellerFail",
+      payload: error.response?.data?.message || error.message || "Failed to load seller",
+    });
   }
-}
+};
+
+// user update information
+export const updateUserInformation =
+  (name, email, phoneNumber, password) => async (dispatch) => {
+    try {
+      dispatch({
+        type: "updateUserInfoRequest",
+      });
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        dispatch({
+          type: "updateUserInfoFailed",
+          payload: "Please login to update your information",
+        });
+        return;
+      }
+
+      const { data } = await axios.put(
+        `${server}/user/update-user-info`,
+        {
+          email,
+          password,
+          phoneNumber,
+          name,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      dispatch({
+        type: "updateUserInfoSuccess",
+        payload: data?.user || data,
+      });
+    } catch (error) {
+      dispatch({
+        type: "updateUserInfoFailed",
+        payload: error.response?.data?.message || error.message || "Failed to update user information",
+      });
+    }
+  };
+
+// update user address
+export const updatUserAddress =
+  (country, city, address1, address2, zipCode, addressType) =>
+    async (dispatch) => {
+      try {
+        dispatch({
+          type: "updateUserAddressRequest",
+        });
+
+        const { data } = await axios.put(
+          `${server}/user/update-user-addresses`,
+          {
+            country,
+            city,
+            address1,
+            address2,
+            zipCode,
+            addressType,
+          },
+          { withCredentials: true }
+        );
+
+        dispatch({
+          type: "updateUserAddressSuccess",
+          payload: {
+            successMessage: "User address updated succesfully!",
+            user: data.user,
+          },
+        });
+      } catch (error) {
+        dispatch({
+          type: "updateUserAddressFailed",
+          payload: error.response?.data?.message || error.message || "Failed to update address",
+        });
+      }
+    };
+
+// delete user address
+export const deleteUserAddress = (id) => async (dispatch) => {
+  try {
+    dispatch({
+      type: "deleteUserAddressRequest",
+    });
+
+    const { data } = await axios.delete(
+      `${server}/user/delete-user-address/${id}`,
+      { withCredentials: true }
+    );
+
+    dispatch({
+      type: "deleteUserAddressSuccess",
+      payload: {
+        successMessage: "User deleted successfully!",
+        user: data.user,
+      },
+    });
+  } catch (error) {
+    dispatch({
+      type: "deleteUserAddressFailed",
+      payload: error.response?.data?.message || error.message || "Failed to delete address",
+    });
+  }
+};
+
+// get all users --- admin
+export const getAllUsers = () => async (dispatch) => {
+  try {
+    dispatch({
+      type: "getAllUsersRequest",
+    });
+
+    const { data } = await axios.get(`${server}/user/admin-all-users`, {
+      withCredentials: true,
+    });
+
+    dispatch({
+      type: "getAllUsersSuccess",
+      payload: data.users,
+    });
+  } catch (error) {
+    dispatch({
+      type: "getAllUsersFailed",
+      payload: error.response?.data?.message || error.message || "Failed to get users",
+    });
+  }
+};

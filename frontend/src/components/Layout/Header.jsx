@@ -90,7 +90,7 @@ const Header = ({ activeHeading }) => {
                       <Link to={`/product/$Product_name`}>
                         <div className="w-full flex items-start py-3">
                           <img
-                            src={i.image_Url[0].url}
+                            src={`${backend_url}${i.images[0]}`}
                             alt=""
                             className="w-[40px] h-[40px] mr-[10px]"
                           />
@@ -116,9 +116,8 @@ const Header = ({ activeHeading }) => {
 
       {/* desktop navbar */}
       <div
-        className={`${
-          active ? "shadow-sm fixed top-0 left-0 z-10" : ""
-        } transition hidden 800px:flex items-center justify-between w-full bg-[#3321c8] h-[70px]`}
+        className={`${active ? "shadow-sm fixed top-0 left-0 z-10" : ""
+          } transition hidden 800px:flex items-center justify-between w-full bg-[#3321c8] h-[70px]`}
       >
         <div
           className={`${styles.section} relative ${styles.noramlFlex} justify-between`}
@@ -237,9 +236,8 @@ const Header = ({ activeHeading }) => {
 
       {/* mobile header */}
       <div
-        className={`${
-          active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
-        }
+        className={`${active === true ? "shadow-sm fixed top-0 left-0 z-10" : null
+          }
         w-full h-[60px]  bg-[#fff] z-50 top-0 left-0 shadow-sm 800px:hidden`}
       >
         <div className="w-full flex items-center justify-between">
@@ -258,7 +256,7 @@ const Header = ({ activeHeading }) => {
           <div>
             <div className="relative mr-[20px]">
               <AiOutlineShoppingCart size={30} />
-              <span class="absolute right-0 top-0 rounded-full bg-[#3bc177] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px]  leading-tight text-center"></span>
+              <span className="absolute right-0 top-0 rounded-full bg-[#3bc177] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px]  leading-tight text-center"></span>
             </div>
           </div>
         </div>
@@ -272,7 +270,7 @@ const Header = ({ activeHeading }) => {
               <div className="w-full justify-between flex pr-3">
                 <div className="relative mr-[15px]">
                   <AiOutlineHeart size={30} className="relative mt-5 ml-3" />
-                  <span class="absolute right-0 top-0 rounded-full bg-[#3bc177] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px]  leading-tight text-center">
+                  <span className="absolute right-0 top-0 rounded-full bg-[#3bc177] w-4 h-4 top right p-0 m-0 text-white font-mono text-[12px]  leading-tight text-center">
                     0
                   </span>
                 </div>
@@ -318,7 +316,7 @@ const Header = ({ activeHeading }) => {
               <div className={`${styles.button} ml-4 !rounded-[4px]`}>
                 <Link to="/shop-create">
                   <h1 className="text-[#fff] flex items-center">
-                    Become Seller
+                    {isSeller ? "Go To Dashboard" : "Become Seller"}
                     <IoIosArrowForward className="ml-1" />
                   </h1>
                 </Link>

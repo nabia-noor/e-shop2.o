@@ -1,4 +1,3 @@
-const { connect } = require("mongoose");
 const path = require("path");
 const fs = require("fs");
 const app = require("./app");
@@ -8,6 +7,7 @@ const connectDatabase = require("./db/database");
 process.on("uncaughtException", (err) => {
   console.log(`❌ Error: ${err.message}`);
   console.log(`Shutting down the server for handling uncaught exception`);
+  process.exit(1);
 });
 
 // 🟢 Load environment variables with fallback to backend/config/.env then backend/.env

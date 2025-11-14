@@ -60,7 +60,7 @@ export const getAllEventsShop = (id) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "getAlleventsShopFailed",
-      payload: error.response.data.message,
+      payload: error.response?.data?.message || error.message,
     });
   }
 };
@@ -86,7 +86,7 @@ export const deleteEvent = (id) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: "deleteeventFailed",
-      payload: error.response.data.message,
+      payload: error.response?.data?.message || error.message,
     });
   }
 };
@@ -99,14 +99,16 @@ export const getAllEvents = () => async (dispatch) => {
     });
 
     const { data } = await axios.get(`${server}/event/get-all-events`);
+    console.log("Events API Response:", data);
     dispatch({
       type: "getAlleventsSuccess",
-      payload: data.events,
+      payload: data.events || data.event || [],
     });
   } catch (error) {
+    console.error("Error fetching events:", error);
     dispatch({
       type: "getAlleventsFailed",
-      payload: error.response.data.message,
+      payload: error.response?.data?.message || error.message,
     });
   }
 };

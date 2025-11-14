@@ -1,39 +1,86 @@
 import React from "react";
 import styles from "../../styles/styles";
-import CountDown from "./CountDown"
-const EventCard = ({active}) => {
+import CountDown from "./CountDown";
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { addTocart } from "../../redux/actions/cart";
+import { toast } from "react-toastify";
+import { backend_url } from "../../server";
+
+const EventCard = ({ active, data }) => {
+  const { cart } = useSelector((state) => state.cart);
+  const dispatch = useDispatch();
+
+  if (!data) {
+    return null;
+  }
+
+  const addToCartHandler = (data) => {
+    const isItemExists = cart && cart.find((i) => i._id === data._id);
+    if (isItemExists) {
+      toast.error("Item already in cart!");
+    } else {
+      if (data.stock < 1) {
+        toast.error("Product stock limited!");
+      } else {
+        const cartData = { ...data, qty: 1 };
+        dispatch(addTocart(cartData));
+        toast.success("Item added to cart successfully!");
+      }
+    }
+  }
+
+  // Get image URL - handle both full URLs and relative paths
+  let imageUrl = "";
+  if (data.images?.[0]?.url) {
+    const url = data.images[0].url;
+    if (url.startsWith('http')) {
+      // Already a full URL
+      imageUrl = url;
+    } else if (url.startsWith('/')) {
+      // Relative path starting with /
+      imageUrl = `${backend_url}${url.substring(1)}`; // Remove leading / to avoid double slash
+    } else {
+      // Relative path without leading /
+      imageUrl = `${backend_url}${url}`;
+    }
+  }
+
   return (
     <div
-      className={`w-full block bg-white rounded-lg ${active ? "unset" : "mb-12"} lg:flex p-2`}
+      className={`w-full block bg-white rounded-lg ${active ? "unset" : "mb-12"
+        } lg:flex p-2`}
     >
-      <div className="w-full lg:-w[50%] m-auto">
-        <img src="https://m.media-amazon.com/images/I/31Vle5fVdaL.jpg" alt=""/>
+      <div className="w-full lg:w-[50%] m-auto">
+        <img src={imageUrl} alt={data.name || "Event image"} className="w-full h-auto object-contain rounded-lg" />
       </div>
-      <div className="w-full lg:[w-50%] flex flex-col justify-center">
-        <h2 className={`${styles.productTitle}`}>Iphone 14 max 8/256gb</h2>
-        <p>Lorem ipsum dolor sit amet constructor adipiscing elit. Eum molestias sequi, officis iusto assumendo libero explicabo amet
-          constructor veniam fugiat coroprias minus modi a  liquam maiores exerciatation provident.
-          Lorem ipsum dolor sit amet constructor adipiscing elit. Eum molestias sequi, officis iusto assumendo libero explicabo amet
-          constructor veniam fugiat coroprias minus modi a  liquam maiores exerciatation provident.
-        </p>
-       <div className="flex py-2 justify-between">
-        <div className="flex">
-          <h5 className="font-[500] text-[18px] text-[#d55b45] pr-3 line-through">
-            1099$
-          </h5>
-          <h5 className="font-bold text-[20px] text-[#333] font-Roboto">
-            999$
-          </h5>
+      <div className="w-full lg:w-[50%] flex flex-col justify-center">
+        <h2 className={`${styles.productTitle}`}>{data.name}</h2>
+        <p>{data.description}</p>
+        <div className="flex py-2 justify-between">
+          <div className="flex">
+            <h5 className="font-[500] text-[18px] text-[#d55b45] pr-3 line-through">
+              {data.originalPrice}$
+            </h5>
+            <h5 className="font-bold text-[20px] text-[#333] font-Roboto">
+              {data.discountPrice}$
+            </h5>
+          </div>
+          <span className="pr-3 font-[400] text-[17px] text-[#44a55e]">
+            {data.sold_out} sold
+          </span>
         </div>
-        <span className="pr-3 font-[400] text-[17px] text-[#44a55e]">
-          120 sold
-        </span>
-       </div>
-       <CountDown/>
-
+        <CountDown data={data} />
+        <br />
+        <div className="flex items-center">
+          <Link to={`/product/${data._id}?isEvent=true`}>
+            <div className={`${styles.button} text-[#fff]`}>See Details</div>
+          </Link>
+          <div className={`${styles.button} text-[#fff] ml-5`} onClick={() => addToCartHandler(data)}>Add to cart</div>
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default EventCard;

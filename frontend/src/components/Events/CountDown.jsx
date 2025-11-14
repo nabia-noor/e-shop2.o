@@ -2,18 +2,25 @@ import axios from "../../axios";
 import React, { useEffect, useState } from "react";
 import { server } from "../../server";
 
+
 const CountDown = ({ data }) => {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (!data || !data.Finish_Date) {
+      return;
+    }
+    const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
-    return () => clearTimeout(timer);
-  }, );
+    return () => clearInterval(timer);
+  }, [data]);
 
   function calculateTimeLeft() {
-    const difference = +new Date('2023-03-15') - +new Date();
+    if (!data || !data.Finish_Date) {
+      return {};
+    }
+    const difference = +new Date(data.Finish_Date) - +new Date();
     let timeLeft = {};
 
     if (difference > 0) {

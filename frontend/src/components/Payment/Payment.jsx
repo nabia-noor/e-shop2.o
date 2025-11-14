@@ -19,6 +19,7 @@ import { RxCross1 } from "react-icons/rx";
 const Payment = () => {
   const [orderData, setOrderData] = useState([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { user } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const stripe = useStripe();
@@ -101,6 +102,7 @@ const Payment = () => {
 
   const paymentHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const config = {
         headers: {
@@ -108,15 +110,32 @@ const Payment = () => {
         },
       };
 
-      const { data } = await axios.post(
-        `${server}/payment/process`,
-        paymentData,
-        config
-      );
+      let data;
+      try {
+        const response = await axios.post(
+          `${server}/payment/process`,
+          paymentData,
+          config
+        );
+        data = response.data;
+      } catch (axiosError) {
+        // Handle Stripe configuration error before it reaches Stripe
+        if (axiosError.response?.data?.message?.includes("Stripe is not configured")) {
+          setLoading(false);
+          toast.error("Credit card payment is not available. Please use Cash on Delivery instead.", {
+            autoClose: 5000,
+          });
+          return;
+        }
+        throw axiosError;
+      }
 
       const client_secret = data.client_secret;
 
-      if (!stripe || !elements) return;
+      if (!stripe || !elements) {
+        setLoading(false);
+        return;
+      }
       const result = await stripe.confirmCardPayment(client_secret, {
         payment_method: {
           card: elements.getElement(CardNumberElement),
@@ -124,10 +143,11 @@ const Payment = () => {
       });
 
       if (result.error) {
+        setLoading(false);
         toast.error(result.error.message);
       } else {
         if (result.paymentIntent.status === "succeeded") {
-          order.paymnentInfo = {
+          order.paymentInfo = {
             id: result.paymentIntent.id,
             status: result.paymentIntent.status,
             type: "Credit Card",
@@ -137,16 +157,31 @@ const Payment = () => {
             .post(`${server}/order/create-order`, order, config)
             .then((res) => {
               setOpen(false);
+              setLoading(false);
               navigate("/order/success");
               toast.success("Order successful!");
               localStorage.setItem("cartItems", JSON.stringify([]));
               localStorage.setItem("latestOrder", JSON.stringify([]));
               window.location.reload();
+            })
+            .catch((error) => {
+              setLoading(false);
+              toast.error(error.response?.data?.message || "Order creation failed");
             });
         }
       }
     } catch (error) {
-      toast.error(error);
+      setLoading(false);
+      const errorMessage = error.response?.data?.message || error.message || "Payment failed";
+
+      // Check if it's a Stripe configuration error
+      if (errorMessage.includes("Stripe is not configured")) {
+        toast.error("Credit card payment is not available. Please use Cash on Delivery instead.", {
+          autoClose: 5000,
+        });
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -187,6 +222,7 @@ const Payment = () => {
             createOrder={createOrder}
             paymentHandler={paymentHandler}
             cashOnDeliveryHandler={cashOnDeliveryHandler}
+            loading={loading}
           />
         </div>
         <div className="w-full 800px:w-[35%] 800px:mt-0 mt-8">
@@ -205,6 +241,7 @@ const PaymentInfo = ({
   createOrder,
   paymentHandler,
   cashOnDeliveryHandler,
+  loading,
 }) => {
   const [select, setSelect] = useState(1);
 
@@ -312,8 +349,10 @@ const PaymentInfo = ({
               </div>
               <input
                 type="submit"
-                value="Submit"
-                className={`${styles.button} !bg-[#f63b60] text-[#fff] h-[45px] rounded-[5px] cursor-pointer text-[18px] font-[600]`}
+                value={loading ? "Processing..." : "Submit"}
+                disabled={loading}
+                onClick={paymentHandler}
+                className={`${styles.button} !bg-[#f63b60] text-[#fff] h-[45px] rounded-[5px] cursor-pointer text-[18px] font-[600] ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
               />
             </form>
           </div>

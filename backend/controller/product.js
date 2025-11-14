@@ -6,6 +6,8 @@ const Product = require("../models/product");
 const Shop = require("../models/shop");
 const { upload } = require("../multer");
 const ErrorHandler = require("../utils/ErrorHandler");
+const fs = require("fs");
+const path = require("path");
 
 // create product
 router.post(
@@ -36,18 +38,20 @@ router.post(
                 return next(new ErrorHandler("Please upload at least one product image", 400));
             }
 
-            // Upload images to Cloudinary
+            // Save images locally and create image URLs
             const imageUrls = [];
+            const baseUrl = process.env.BACKEND_URL || "http://localhost:8000";
+
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const result = await cloudinary.uploader.upload(file.buffer, {
-                    folder: "products",
-                    resource_type: "auto",
-                });
+
+                // File is already saved to uploads folder by multer
+                // Create full URL path for the saved file
+                const fileUrl = `${baseUrl}/uploads/${file.filename}`;
 
                 imageUrls.push({
-                    public_id: result.public_id,
-                    url: result.secure_url,
+                    public_id: file.filename, // Using filename as public_id for local storage
+                    url: fileUrl, // Full URL for frontend to access
                 });
             }
 
@@ -102,16 +106,19 @@ router.delete(
                 return next(new ErrorHandler("You can only delete products from your own shop!", 403));
             }
 
-            // Delete images from Cloudinary if they exist
+            // Delete images from local storage if they exist
             if (product.images && product.images.length > 0) {
                 for (let i = 0; i < product.images.length; i++) {
                     const image = product.images[i];
-                    if (image.public_id && image.public_id !== "local") {
+                    if (image.url) {
                         try {
-                            await cloudinary.uploader.destroy(image.public_id);
+                            const filePath = path.join(__dirname, "..", "uploads", image.url);
+                            if (fs.existsSync(filePath)) {
+                                fs.unlinkSync(filePath);
+                            }
                         } catch (error) {
-                            console.error(`Error deleting image ${image.public_id}:`, error);
-                            // Continue with deletion even if cloudinary delete fails
+                            console.error(`Error deleting image ${image.url}:`, error);
+                            // Continue with deletion even if file delete fails
                         }
                     }
                 }
@@ -130,6 +137,23 @@ router.delete(
 );
 
 // get all products
+router.get(
+    "/all",
+    catchAsyncErrors(async (req, res, next) => {
+        try {
+            const products = await Product.find().sort({ createdAt: -1 });
+
+            res.status(200).json({
+                success: true,
+                products,
+            });
+        } catch (error) {
+            return next(new ErrorHandler(error.message || "Failed to get products", 400));
+        }
+    })
+);
+
+// get all products (alternative route)
 router.get(
     "/get-all-products",
     catchAsyncErrors(async (req, res, next) => {

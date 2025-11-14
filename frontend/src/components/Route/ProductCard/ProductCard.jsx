@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AiFillHeart,
   AiFillStar,
@@ -10,26 +10,102 @@ import {
 import { Link } from "react-router-dom";
 import styles from "../../../styles/styles";
 import ProductDetailsCard from "../ProductDetailsCard/ProductDetailsCard";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { addTocart } from "../../../redux/actions/cart";
+import { addToWishlist, removeFromWishlist } from "../../../redux/actions/wishlist";
 
 const ProductCard = ({ data }) => {
+  const { cart } = useSelector((state) => state.cart);
   const [click, setClick] = useState(false);
   const [open, setOpen] = useState(false);
+  const dispatch = useDispatch();
+  const { wishlist } = useSelector((state) => state.wishlist);
+
+  useEffect(() => {
+    if (data && wishlist && Array.isArray(wishlist)) {
+      const dataId = data._id || data.id;
+      const isInWishlist = wishlist.find((i) => {
+        const itemId = i._id || i.id;
+        return itemId === dataId;
+      });
+      setClick(!!isInWishlist);
+    } else {
+      setClick(false);
+    }
+  }, [wishlist, data]);
+
+  if (!data) {
+    return null;
+  }
 
   const d = data.name;
   const product_name = d.replace(/\s+/g, "-");
+
+  const removeFromWishlistHandler = (e, data) => {
+    e.stopPropagation();
+    dispatch(removeFromWishlist(data));
+  };
+
+  const addToWishlistHandler = (e, data) => {
+    e.stopPropagation();
+    dispatch(addToWishlist(data));
+  }
+
+  // Handle both static data and API data structures
+  const imageUrl = data.image_Url?.[0]?.url || data.images?.[0]?.url || "";
+  const shopName = data.shop?.name || "";
+  const discountPrice = data.discount_price || data.discountPrice || 0;
+  const originalPrice = data.price || data.originalPrice || 0;
+  const soldCount = data.total_sell || data.sold_out || 0;
+
+  const addToCartHandler = () => {
+    if (!data) {
+      toast.error("Product data is missing!");
+      return;
+    }
+
+    // Get product ID (handle both _id and id)
+    const productId = data._id || data.id;
+    if (!productId) {
+      toast.error("Product ID is missing!");
+      return;
+    }
+
+    // Check if item already exists in cart (handle both _id and id)
+    const isItemExists = cart && cart.find((i) => {
+      const itemId = i._id || i.id;
+      return itemId === productId;
+    });
+
+    if (isItemExists) {
+      toast.error("Item already in cart!");
+    } else {
+      const stock = data.stock || 0;
+      const count = 1; // Default quantity for ProductCard (no quantity selector)
+      if (stock < 1) {
+        toast.error("Product stock limited!");
+      } else {
+        const cartData = { ...data, qty: 1 };
+        dispatch(addTocart(cartData));
+        toast.success("Item added to cart successfully!");
+      }
+    }
+  };
+
   return (
     <>
       <div className="w-full h-[370px] bg-white rounded-lg shadow-sm p-3 relative cursor-pointer">
         <div className="flex justify-end"></div>
         <Link to={`/product/${product_name}`}>
           <img
-            src={data.image_Url[0].url}
+            src={imageUrl}
             alt=""
             className="w-full h-[170px] object-contain"
           />
         </Link>
-        <Link to="/">
-          <h5 className={`${styles.shop_name}`}>{data.shop.name}</h5>
+        <Link to={`/shop/preview/${data?.shop._id}`} >
+          <h5 className={`${styles.shop_name}`}>{shopName}</h5>
         </Link>
         <Link to={`/product/${product_name}`}>
           <h4 className="pb-3 font-[500]">
@@ -67,14 +143,14 @@ const ProductCard = ({ data }) => {
           <div className="py-2 flex items-center justify-between">
             <div className="flex">
               <h5 className={`${styles.productDiscountPrice}`}>
-                {data.price === 0 ? data.price : data.discount_price}$
+                {originalPrice === 0 ? originalPrice : discountPrice}$
               </h5>
               <h4 className={`${styles.price}`}>
-                {data.price ? data.price + " $" : null}
+                {originalPrice ? originalPrice + " $" : null}
               </h4>
             </div>
             <span className="font-[400] text-[17px] text-[#68d284]">
-              {data.total_sell} sold
+              {soldCount} sold
             </span>
           </div>
         </Link>
@@ -85,16 +161,16 @@ const ProductCard = ({ data }) => {
             <AiFillHeart
               size={22}
               className="cursor-pointer absolute right-2 top-5"
-              onClick={() => setClick(!click)}
-              color={click ? "red" : "#333"}
+              onClick={(e) => removeFromWishlistHandler(e, data)}
+              color="red"
               title="Remove from wishlist"
             />
           ) : (
             <AiOutlineHeart
               size={22}
               className="cursor-pointer absolute right-2 top-5"
-              onClick={() => setClick(!click)}
-              color={click ? "red" : "#333"}
+              onClick={(e) => addToWishlistHandler(e, data)}
+              color="#333"
               title="Add to wishlist"
             />
           )}
@@ -109,7 +185,7 @@ const ProductCard = ({ data }) => {
           <AiOutlineShoppingCart
             size={25}
             className="cursor-pointer absolute right-2 top-24"
-            onClick={() => setOpen(!open)}
+            onClick={addToCartHandler}
             color="#444"
             title="Add to cart"
           />

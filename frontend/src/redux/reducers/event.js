@@ -2,6 +2,7 @@ import { createReducer } from "@reduxjs/toolkit";
 
 const initialState = {
   isLoading: true,
+  allEvents: [],
 };
 
 export const eventReducer = createReducer(initialState, (builder) => {
@@ -53,11 +54,12 @@ export const eventReducer = createReducer(initialState, (builder) => {
     })
     .addCase("getAlleventsSuccess", (state, action) => {
       state.isLoading = false;
-      state.allEvents = action.payload;
+      state.allEvents = action.payload || [];
     })
     .addCase("getAlleventsFailed", (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
+      state.allEvents = [];
     })
 
     // ───────── Clear Errors ─────────

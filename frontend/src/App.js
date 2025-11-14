@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -14,8 +14,9 @@ import {
   ShopCreatePage,
   SellerActivationPage,
   ShopLoginPage,
+  TrackOrderPage,
 } from "./routes/Routes.js";
-import { ShopDashboardPage, ShopCreateProduct, ShopAllProducts, ShopCreateEvent, ShopAllEvents, ShopAllCoupouns } from "./routes/ShopRoutes";
+import { ShopDashboardPage, ShopCreateProduct, ShopAllProducts, ShopCreateEvent, ShopAllEvents, ShopAllCoupouns, ShopAllOrders, ShopOrderDetails, OrderDetailsPage, } from "./routes/ShopRoutes";
 import ShopDashboardProfile from "./pages/Shop/ShopDashboardProfile";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -31,20 +32,36 @@ import ProtectedRoute from "./routes/ProtectedRoute.js";
 import { useSelector } from "react-redux";
 import { ShopHomePage } from "./ShopRoutes.js";
 import SellerProtectedRoute from "./routes/SellerProtectedRoute";
+import axiosInstance from "./axios";
+import { server } from "./server";
 
 const stripePromise = loadStripe(
   "pk_test_12345_yahan_apna_publishable_key_lagao"
 );
 
 const App = () => {
+  const [stripeApikey, setStripeApiKey] = useState("");
   const { isAuthenticated } = useSelector((state) => state.user);
   const { isSeller, seller } = useSelector((state) => state.seller);
   const navigate = useNavigate();
   const location = useLocation();
 
+
+  async function getStripeApiKey() {
+    try {
+      const { data } = await axiosInstance.get("/payment/stripeapikey");
+      if (data && data.stripeApikey) {
+        setStripeApiKey(data.stripeApikey);
+      }
+    } catch (error) {
+      console.error("Error fetching Stripe API key:", error);
+      // Don't set error state, just log it - app can still work without it
+    }
+  }
   useEffect(() => {
     Store.dispatch(loadUser());
     Store.dispatch(loadSeller());
+    getStripeApiKey();
   }, []);
 
   useEffect(() => {
@@ -79,7 +96,7 @@ const App = () => {
         <Route
           path="/checkout"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <ProtectedRoute>
               <CheckoutPage />
             </ProtectedRoute>
           }
@@ -88,8 +105,26 @@ const App = () => {
         <Route
           path="/profile"
           element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/user/order/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/user/track/order/:id"
+          element={
+            <ProtectedRoute>
+              <TrackOrderPage />
             </ProtectedRoute>
           }
         />
@@ -108,6 +143,8 @@ const App = () => {
         <Route path="/dashboard-create-event" element={<ShopCreateEvent />} />
         <Route path="/dashboard-events" element={<ShopAllEvents />} />
         <Route path="/dashboard-coupouns" element={<ShopAllCoupouns />} />
+        <Route path="/dashboard-orders" element={<ShopAllOrders />} />
+        <Route path="/order/:id" element={<ShopOrderDetails />} />
 
 
         <Route

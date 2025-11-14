@@ -14,9 +14,10 @@ export const addToWishlist = (data) => async (dispatch, getState) => {
 
 // remove from wishlist
 export const removeFromWishlist = (data) => async (dispatch, getState) => {
+  const itemId = data._id || data.id;
   dispatch({
     type: "removeFromWishlist",
-    payload: data._id,
+    payload: itemId,
   });
   localStorage.setItem(
     "wishlistItems",

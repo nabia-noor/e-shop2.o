@@ -24,10 +24,10 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   const [click, setClick] = useState(false);
   // const [select, setSelect] = useState(false);
 
-  const handleMessageSubmit = () => {};
+  const handleMessageSubmit = () => { };
 
   const decrementCount = () => {
-    if (count > 1) { 
+    if (count > 1) {
       setCount(count - 1);
     }
   };
@@ -37,12 +37,18 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   };
 
   const addToCartHandler = (id) => {
+    if (!data || !id) {
+      toast.error("Product data is missing!");
+      return;
+    }
+
     const isItemExists = cart && cart.find((i) => i._id === id);
     if (isItemExists) {
       toast.error("Item already in cart!");
     } else {
-      if (data.stock < count) {
-        toast.error(" Product stock limited!");
+      const stock = data.stock || 0;
+      if (stock < count) {
+        toast.error("Product stock limited!");
       } else {
         const cartData = { ...data, qty: count };
         dispatch(addTocart(cartData));
@@ -52,22 +58,32 @@ const ProductDetailsCard = ({ setOpen, data }) => {
   };
 
   useEffect(() => {
-    if (wishlist && wishlist.find((i) => i._id === data._id)) {
-      setClick(true);
+    if (data && wishlist && Array.isArray(wishlist)) {
+      const dataId = data._id || data.id;
+      const isInWishlist = wishlist.find((i) => {
+        const itemId = i._id || i.id;
+        return itemId === dataId;
+      });
+      setClick(!!isInWishlist);
     } else {
       setClick(false);
     }
-  }, [wishlist]);
+  }, [wishlist, data]);
 
-  const removeFromWishlistHandler = (data) => {
-    setClick(!click);
+  const removeFromWishlistHandler = (e, data) => {
+    e.stopPropagation();
     dispatch(removeFromWishlist(data));
   };
 
-  const addToWishlistHandler = (data) => {
-    setClick(!click);
+  const addToWishlistHandler = (e, data) => {
+    e.stopPropagation();
     dispatch(addToWishlist(data));
   };
+
+  // Early return if data is not available (after all hooks)
+  if (!data) {
+    return null;
+  }
 
   return (
     <div className="bg-[#fff]">
@@ -82,22 +98,35 @@ const ProductDetailsCard = ({ setOpen, data }) => {
 
             <div className="block w-full 800px:flex">
               <div className="w-full 800px:w-[50%]">
-                <img src={data.image_Url[0].url} alt="" />
-                <div className="flex">
-                    <img
-                      src={data.shop.shop_avatar.url}
-                      alt=""
-                      className="w-[50px] h-[50px] rounded-full mr-2"
-                    />
-                    <div>
-                      <h3 className={`${styles.shop_name}`}>
-                        {data.shop.name}
-                      </h3>
-                      <h5 className="pb-3 text-[15px]">
-                        ({data.shop.ratings}) Ratings
-                      </h5>
-                    </div>
-                  
+                <img
+                  src={
+                    (data.image_Url && data.image_Url[0]?.url) ||
+                    (data.images && data.images[0]?.url) ||
+                    "https://via.placeholder.com/400"
+                  }
+                  alt={data.name || "Product"}
+                  className="w-full h-auto"
+                />
+                <div className="flex items-center mt-4">
+                  <img
+                    src={
+                      (data.shop?.shop_avatar?.url) ||
+                      (data.shop?.avatar?.url) ||
+                      (data.shop?.avatar) ||
+                      "https://via.placeholder.com/50"
+                    }
+                    alt={data.shop?.name || "Shop"}
+                    className="w-[50px] h-[50px] rounded-full mr-2 object-cover"
+                  />
+                  <div>
+                    <h3 className={`${styles.shop_name}`}>
+                      {data.shop?.name || "Shop Name"}
+                    </h3>
+                    <h5 className="pb-3 text-[15px]">
+                      ({data.shop?.ratings || 0}) Ratings
+                    </h5>
+                  </div>
+
                 </div>
                 <div
                   className={`${styles.button} bg-[#000] mt-4 rounded-[4px] h-11`}
@@ -106,8 +135,10 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                   <span className="text-[#fff] flex items-center">
                     Send Message <AiOutlineMessage className="ml-1" />
                   </span>
-                </div> 
-                <h5 className="text-[16px] text-[red] mt-5">({data.total_sell})Sold out</h5>
+                </div>
+                <h5 className="text-[16px] text-[red] mt-5">
+                  ({data.total_sell || data.sold_out || 0}) Sold out
+                </h5>
               </div>
 
               <div className="w-full 800px:w-[50%] pt-5 pl-[5px] pr-[5px]">
@@ -118,10 +149,10 @@ const ProductDetailsCard = ({ setOpen, data }) => {
 
                 <div className="flex pt-3">
                   <h4 className={`${styles.productDiscountPrice}`}>
-                    {data.discountprice}$
+                    ${data.discountPrice || data.discount_price || data.discountprice || 0}
                   </h4>
                   <h3 className={`${styles.price}`}>
-                    {data.price ? data.price + "$" : null}
+                    {data.price ? `$${data.price}` : null}
                   </h3>
                 </div>
                 <div className="flex items-center mt-12 justify-between pr-3">
@@ -147,15 +178,16 @@ const ProductDetailsCard = ({ setOpen, data }) => {
                       <AiFillHeart
                         size={30}
                         className="cursor-pointer"
-                        onClick={() => removeFromWishlistHandler(data)}
-                        color={click ? "red" : "#333"}
+                        onClick={(e) => removeFromWishlistHandler(e, data)}
+                        color="red"
                         title="Remove from wishlist"
                       />
                     ) : (
                       <AiOutlineHeart
                         size={30}
                         className="cursor-pointer"
-                        onClick={() => addToWishlistHandler(data)}
+                        onClick={(e) => addToWishlistHandler(e, data)}
+                        color="#333"
                         title="Add to wishlist"
                       />
                     )}

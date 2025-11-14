@@ -10,6 +10,8 @@ const shopRoutes = require("./controller/shop");
 const productRoutes = require('./controller/product');
 const eventRoutes = require('./controller/event');
 const couponRoutes = require('./controller/coupounCode');
+const paymentRoutes = require('./controller/payment');
+const orderRoutes = require('./controller/order');
 
 // Load environment variables if not production
 if (process.env.NODE_ENV !== "PRODUCTION") {
@@ -23,6 +25,9 @@ app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 app.use(express.json());
@@ -38,7 +43,8 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/shop", shopRoutes);
 app.use("/api/v1/event", eventRoutes);
 app.use("/api/v1/coupon", couponRoutes);
-
+app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/order", orderRoutes);
 // Error Handling Middleware
 app.use(ErrorHandler);
 

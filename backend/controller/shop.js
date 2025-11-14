@@ -11,6 +11,13 @@ const { upload } = require("../multer");
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
+// Helper function for creating activation token
+const createActivationToken = (seller) => {
+  return jwt.sign(seller, process.env.ACTIVATION_SECRET, {
+    expiresIn: "90d",
+  });
+};
+
 // ---- CREATE SHOP ----
 router.post("/create-shop", upload.single("file"), catchAsyncErrors(async (req, res, next) => {
   try {
@@ -80,12 +87,6 @@ router.post("/create-shop", upload.single("file"), catchAsyncErrors(async (req, 
     return next(new ErrorHandler(error.message, 400));
   }
 }));
-
-const createActivationToken = (seller) => {
-  return jwt.sign(seller, process.env.ACTIVATION_SECRET, {
-    expiresIn: "90d",
-  });
-};
 
 // ----- ACTIVATE SHOP ----
 router.post(
@@ -201,6 +202,26 @@ router.get(
     }
   })
 );
+
+// get shop info
+router.get(
+  "/get-shop-info/:id",
+  catchAsyncErrors(async (req, res, next) => {
+    try {
+      const shop = await Shop.findById(req.params.id);
+      if (!shop) {
+        return next(new ErrorHandler("Shop not found", 404));
+      }
+      res.status(200).json({
+        success: true,
+        shop,
+      });
+    } catch (error) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  })
+);
+
 
 
 

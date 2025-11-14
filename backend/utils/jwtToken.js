@@ -5,14 +5,21 @@ const sendToken = (user, statusCode, res) => {
   const isProduction = process.env.NODE_ENV === "PRODUCTION" || process.env.NODE_ENV === "production";
 
   // Options for cookies
+  // For localhost cross-origin: use "none" with secure: false (Chrome/Firefox allow this for localhost)
+  // For production: use "none" with secure: true (required for cross-origin)
   const options = {
     expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    // For localhost: use "lax" or "strict", secure: false
-    // For production: use "none", secure: true
-    sameSite: isProduction ? "none" : "lax",
-    secure: isProduction,
+    sameSite: "none", // Required for cross-origin (localhost:3000 -> localhost:8000)
+    secure: false, // false for localhost (browsers allow this exception), true for production
+    path: "/", // Ensure cookie is available for all paths
+    // Don't set domain - browser will automatically set it to the domain that sets it (localhost:8000)
   };
+
+  // For production, set secure to true
+  if (isProduction) {
+    options.secure = true;
+  }
 
   console.log("Setting cookie with options:", {
     expires: options.expires,

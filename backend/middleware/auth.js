@@ -1,6 +1,6 @@
 const ErrorHandler = require("../utils/ErrorHandler");
 const catchAsyncErrors = require("./catchAsyncErrors");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const Shop = require("../models/shop");
 
@@ -22,6 +22,9 @@ exports.isAuthenticated = catchAsyncErrors(async (req, res, next) => {
             return next(new ErrorHandler("Server configuration error", 500));
         }
 
+        console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+        console.log("JWT_SECRET length:", process.env.JWT_SECRET?.length);
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("Token decoded successfully:", decoded);
 
@@ -42,15 +45,28 @@ exports.isAuthenticated = catchAsyncErrors(async (req, res, next) => {
         next();
     } catch (error) {
         console.error("Auth error:", error.name, error.message);
+
+        // Clear invalid/expired token cookie
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            res.clearCookie("token", {
+                httpOnly: true,
+                sameSite: "none",
+                secure: process.env.NODE_ENV === "PRODUCTION" || process.env.NODE_ENV === "production",
+                path: "/",
+            });
+        }
+
         if (error.name === 'JsonWebTokenError') {
-            return next(new ErrorHandler("Invalid token", 401));
+            console.log("Invalid token signature - clearing cookie");
+            return next(new ErrorHandler("Invalid token, please login again", 401));
         }
         if (error.name === 'TokenExpiredError') {
+            console.log("Token expired - clearing cookie");
             return next(new ErrorHandler("Token expired, please login again", 401));
         }
         return next(new ErrorHandler(error.message || "Authentication failed", 401));
     }
-})
+});
 
 // Shop authentication middleware
 exports.isSeller = catchAsyncErrors(async (req, res, next) => {
@@ -65,7 +81,7 @@ exports.isSeller = catchAsyncErrors(async (req, res, next) => {
     req.seller = await Shop.findById(decoded.id);
 
     next();
-})
+});
 
 // Admin authentication middleware
 exports.isAdmin = (role = "Admin") => {
